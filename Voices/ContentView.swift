@@ -40,7 +40,7 @@ struct ContentView: View {
                         NotificationCenter.default.post(name: .feedScrollToTop, object: nil)
                     } else if newValue == 1 {
                         NotificationCenter.default.post(name: .followingScrollToTop, object: nil)
-                    } else if newValue == 3 {
+                    } else if newValue == 4 {
                         NotificationCenter.default.post(name: .profileScrollToTop, object: nil)
                     }
                 }
@@ -61,9 +61,13 @@ struct ContentView: View {
                     .tag(2)
             }
 
+            ChannelsDiscoveryView()
+                .tabItem { Label("Channels", systemImage: "antenna.radiowaves.left.and.right") }
+                .tag(3)
+
             ProfileView()
                 .tabItem { Label("Profile", systemImage: "person.crop.circle") }
-                .tag(3)
+                .tag(4)
         }
         .tint(AppTheme.gold)
         .preferredColorScheme(.dark)

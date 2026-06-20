@@ -28,5 +28,8 @@ supabase/.branches/
 .env
 .env.local
 
+# Claude Code local settings (may contain tokens in command history)
+.claude/
+
 # macOS
 .DS_Store
