@@ -178,17 +178,4 @@ enum ChannelCategory: String, CaseIterable, Identifiable {
     case other    = "Other"
 
     var id: String { rawValue }
-
-    var emoji: String {
-        switch self {
-        case .comedy:    return "😂"
-        case .music:     return "🎵"
-        case .tech:      return "💻"
-        case .news:      return "📰"
-        case .sports:    return "⚽"
-        case .arts:      return "🎨"
-        case .lifestyle: return "✨"
-        case .other:     return "📻"
-        }
-    }
 }

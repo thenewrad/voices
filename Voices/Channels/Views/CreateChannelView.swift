@@ -31,7 +31,7 @@ struct CreateChannelView: View {
                 Section("Category") {
                     Picker("Category", selection: $category) {
                         ForEach(ChannelCategory.allCases) { cat in
-                            Text("\(cat.emoji) \(cat.rawValue)").tag(cat)
+                            Text(cat.rawValue).tag(cat)
                         }
                     }
                     .pickerStyle(.navigationLink)

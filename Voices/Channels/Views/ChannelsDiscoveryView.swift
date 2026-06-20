@@ -29,7 +29,7 @@ struct ChannelsDiscoveryView: View {
                         }
                         ForEach(ChannelCategory.allCases) { cat in
                             CategoryPill(
-                                label: "\(cat.emoji) \(cat.rawValue)",
+                                label: cat.rawValue,
                                 isSelected: vm.selectedCategory == cat.rawValue
                             ) {
                                 vm.selectedCategory = cat.rawValue
