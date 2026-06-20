@@ -105,13 +105,10 @@ create policy "Members visible for public channels or to members" on channel_mem
         or is_channel_member(channel_id, auth.uid())
     );
 
--- NOTE: live policy compares cm.channel_id to itself (always true), so the
--- "first member" guard is a no-op once channel_members has any row at all.
--- Replicated as deployed; not fixed here.
 create policy "Creator inserts themselves as admin on new channel" on channel_members for insert
     with check (
         auth.uid() = user_id and role = 'admin'
-        and not exists (select 1 from channel_members cm where cm.channel_id = cm.channel_id)
+        and not exists (select 1 from channel_members cm where cm.channel_id = channel_members.channel_id)
     );
 
 create policy "Users can follow public open channels" on channel_members for insert
