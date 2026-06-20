@@ -55,16 +55,6 @@ class ChannelService: ObservableObject {
             .value
     }
 
-    func fetchChannel(id: UUID) async throws -> Channel {
-        return try await client
-            .from("channels")
-            .select()
-            .eq("id", value: id)
-            .single()
-            .execute()
-            .value
-    }
-
     func updateChannel(_ channel: Channel) async throws {
         struct Update: Encodable {
             let name: String
@@ -222,13 +212,14 @@ class ChannelService: ObservableObject {
 
         // Resolve username → user id
         struct Profile: Decodable { let id: UUID }
-        let profile: Profile = try await client
+        let profiles: [Profile] = try await client
             .from("profiles")
             .select("id")
             .eq("username", value: username)
-            .single()
+            .limit(1)
             .execute()
             .value
+        guard let profile = profiles.first else { throw ChannelError.userNotFound }
 
         struct Insert: Encodable {
             let channel_id: UUID
@@ -350,16 +341,12 @@ class ChannelService: ObservableObject {
 
 enum ChannelError: LocalizedError {
     case notAuthenticated
-    case insufficientPermissions
-    case channelNotFound
     case userNotFound
 
     var errorDescription: String? {
         switch self {
-        case .notAuthenticated:        return "You must be signed in."
-        case .insufficientPermissions: return "You don't have permission to do that."
-        case .channelNotFound:         return "Channel not found."
-        case .userNotFound:            return "User not found."
+        case .notAuthenticated: return "You must be signed in."
+        case .userNotFound:     return "User not found."
         }
     }
 }

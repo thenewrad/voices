@@ -13,7 +13,7 @@ struct ChannelsDiscoveryView: View {
                         .foregroundStyle(.secondary)
                     TextField("Search channels", text: $vm.searchText)
                         .autocorrectionDisabled()
-                        .onSubmit { Task { await vm.search() } }
+                        .onSubmit { Task { await vm.load() } }
                 }
                 .padding(10)
                 .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
@@ -64,6 +64,16 @@ struct ChannelsDiscoveryView: View {
             .navigationTitle("Channels")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    NavigationLink(destination: MyChannelsView()) {
+                        Image(systemName: "person.2")
+                    }
+                }
+                ToolbarItem(placement: .topBarLeading) {
+                    NavigationLink(destination: ChannelInvitesInboxView()) {
+                        Image(systemName: "envelope")
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         showCreate = true
@@ -114,10 +124,6 @@ class ChannelsDiscoveryViewModel: ObservableObject {
             errorMessage = error.localizedDescription
             showError = true
         }
-    }
-
-    func search() async {
-        await load()
     }
 }
 
