@@ -168,12 +168,14 @@ enum InviteStatus: String, Codable {
 // MARK: - Channel Categories
 
 enum ChannelCategory: String, CaseIterable, Identifiable {
-    case comedy   = "Comedy"
+    case humor    = "Humor"
     case music    = "Music"
     case tech     = "Tech"
     case news     = "News"
     case sports   = "Sports"
-    case arts     = "Arts"
+    case food     = "Food"
+    case faith    = "Faith"
+    case travel   = "Travel"
     case lifestyle = "Lifestyle"
     case other    = "Other"
 
