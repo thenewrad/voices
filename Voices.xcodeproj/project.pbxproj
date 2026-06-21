@@ -36,7 +36,6 @@
 		9D6D6413B207EFA92ADE4F9D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D417D060ED43380E18A48650 /* Assets.xcassets */; };
 		9F5AD09810E34AB1A613CCB4 /* PostClipToChannelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8EA3E730FE34307A684307A /* PostClipToChannelView.swift */; };
 		9FD15BAB7CD74D96B919615E /* ChannelSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5DDE33316CF47A08F847510 /* ChannelSettingsView.swift */; };
-		C0DAFBC962C2471BBF8F88BD /* MyChannelsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9A7520FDA24C0D9F31C43B /* MyChannelsView.swift */; };
 		9FE7AFA107C14F5E80C237AA /* Channel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465AF4BF4EEB40F7B0194512 /* Channel.swift */; };
 		A1B2C3D4E5F6A7B8C9D0E1F2 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = C3D4E5F6A7B8C9D0E1F2A3B4 /* Supabase */; };
 		A41F7E1F0775460860D3A03C /* ProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD443352BD6144C406BB93B8 /* ProfileViewModel.swift */; };
@@ -55,6 +54,7 @@
 		BB440044BB440044BB440044 /* ClipRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA440044AA440044AA440044 /* ClipRow.swift */; };
 		BB550055BB550055BB550055 /* MiniPlayerBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA550055AA550055AA550055 /* MiniPlayerBar.swift */; };
 		BB660066BB660066BB660066 /* FeedViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA660066AA660066AA660066 /* FeedViewModel.swift */; };
+		C0DAFBC962C2471BBF8F88BD /* MyChannelsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9A7520FDA24C0D9F31C43B /* MyChannelsView.swift */; };
 		C5632A09982AF0C5DB51593E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE823F8C5E0BC9198F6A754C /* Foundation.framework */; };
 		C5CD856C6FD34C6647F6A845 /* VoicesApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 284BFA74983F45ECB60E6482 /* VoicesApp.swift */; };
 		CB1D3C592AC319B9C4A5E71C /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6DBCC2E91C8526CCE837F35 /* ActivityView.swift */; };
@@ -93,6 +93,7 @@
 		465AF4BF4EEB40F7B0194512 /* Channel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Channel.swift; sourceTree = "<group>"; };
 		4FC559317353469FA9711496 /* CreateChannelView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CreateChannelView.swift; sourceTree = "<group>"; };
 		58960CD5DA624E5425277C71 /* NowPlayingView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NowPlayingView.swift; sourceTree = "<group>"; };
+		5B9A7520FDA24C0D9F31C43B /* MyChannelsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MyChannelsView.swift; sourceTree = "<group>"; };
 		6438C2EE825E4954B2463147 /* ChannelsDiscoveryView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChannelsDiscoveryView.swift; sourceTree = "<group>"; };
 		6B1B31692F1BEA4DAD66BDFB /* UserProfileView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = UserProfileView.swift; path = UserProfile/UserProfileView.swift; sourceTree = "<group>"; };
 		6BF530E8E04B3944DCAD36FF /* UserProfile.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UserProfile.swift; sourceTree = "<group>"; };
@@ -137,7 +138,6 @@
 		DE823F8C5E0BC9198F6A754C /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		E4DD13E9D01C3BAEAE87667E /* FollowingFeedViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FollowingFeedViewModel.swift; sourceTree = "<group>"; };
 		E5DDE33316CF47A08F847510 /* ChannelSettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChannelSettingsView.swift; sourceTree = "<group>"; };
-		5B9A7520FDA24C0D9F31C43B /* MyChannelsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MyChannelsView.swift; sourceTree = "<group>"; };
 		E5F6A7B8C9D0E1F2A3B4C5D6 /* RecordingViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RecordingViewModel.swift; sourceTree = "<group>"; };
 		E925A7078E01E180A4B1A76F /* OnboardingView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OnboardingView.swift; path = Auth/OnboardingView.swift; sourceTree = "<group>"; };
 		E925A7078E01E180A4B1A76F0 /* OnboardingSplashView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = OnboardingSplashView.swift; path = Auth/OnboardingSplashView.swift; sourceTree = "<group>"; };
@@ -636,7 +636,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_ENTITLEMENTS = Voices/Voices.entitlements;
-				CURRENT_PROJECT_VERSION = 31;
+				CURRENT_PROJECT_VERSION = 32;
 				DEVELOPMENT_TEAM = SMUZ287Y48;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;
@@ -665,7 +665,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_ENTITLEMENTS = Voices/Voices.entitlements;
-				CURRENT_PROJECT_VERSION = 31;
+				CURRENT_PROJECT_VERSION = 32;
 				DEVELOPMENT_TEAM = SMUZ287Y48;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = NO;

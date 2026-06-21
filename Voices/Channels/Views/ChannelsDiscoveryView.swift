@@ -39,6 +39,7 @@ struct ChannelsDiscoveryView: View {
                     }
                     .padding(.horizontal)
                 }
+                .scrollBounceBehavior(.basedOnSize)
                 .padding(.bottom, 8)
 
                 Divider()
@@ -59,6 +60,7 @@ struct ChannelsDiscoveryView: View {
                         .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
                     }
                     .listStyle(.plain)
+                    .refreshable { await vm.load() }
                 }
             }
             .navigationTitle("Channels")
@@ -91,7 +93,6 @@ struct ChannelsDiscoveryView: View {
                 }
             }
             .task { await vm.load() }
-            .refreshable { await vm.load() }
             .alert("Error", isPresented: $vm.showError) {
                 Button("OK", role: .cancel) {}
             } message: {
