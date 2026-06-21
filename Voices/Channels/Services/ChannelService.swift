@@ -336,14 +336,6 @@ class ChannelService: ObservableObject {
             .execute()
     }
 
-    func removeClipFromChannel(channelClipId: UUID) async throws {
-        try await client
-            .from("channel_clips")
-            .delete()
-            .eq("id", value: channelClipId)
-            .execute()
-    }
-
     // MARK: - Current User Role
 
     func currentUserRole(channelId: UUID) async throws -> ChannelRole? {

@@ -253,7 +253,7 @@ struct MemberRow: View {
                     }
                 }
                 Divider()
-                Button("Remove", role: .destructive, action: onRemove)
+                Button("Remove from channel", role: .destructive, action: onRemove)
             } label: {
                 Image(systemName: "ellipsis.circle")
                     .foregroundStyle(.secondary)

@@ -9,7 +9,6 @@ enum ChannelRole: String, Codable, CaseIterable, Hashable {
     case member
     case follower
 
-    var canRemoveClips: Bool { self == .admin || self == .moderator }
     var canManageMembers: Bool { self == .admin || self == .moderator }
     var canChangeSettings: Bool { self == .admin }
 }

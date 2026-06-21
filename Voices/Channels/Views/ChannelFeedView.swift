@@ -18,8 +18,6 @@ struct ChannelFeedView: View {
         _vm = StateObject(wrappedValue: ChannelFeedViewModel(channel: channel))
     }
 
-    private var canRemove: Bool { vm.userRole?.canRemoveClips == true }
-
     var body: some View {
         ScrollView {
             LazyVStack(spacing: 0) {
@@ -47,19 +45,6 @@ struct ChannelFeedView: View {
                                 Task { await vm.deleteOwnPost(channelClip) }
                             })
                                 .background(AppTheme.canvasBlack)
-                                .overlay(alignment: .topTrailing) {
-                                    if canRemove {
-                                        Menu {
-                                            Button("Remove from channel", role: .destructive) {
-                                                Task { await vm.removeClip(channelClip) }
-                                            }
-                                        } label: {
-                                            Image(systemName: "ellipsis.circle.fill")
-                                                .foregroundStyle(.secondary)
-                                                .padding(10)
-                                        }
-                                    }
-                                }
                             Divider().overlay(Color(hex: "3A2820"))
                         }
                     }
@@ -245,16 +230,6 @@ class ChannelFeedViewModel: ObservableObject {
         do {
             try await ChannelService.shared.leaveChannel(id: channel.id)
             userRole = nil
-        } catch {
-            errorMessage = error.localizedDescription
-            showError = true
-        }
-    }
-
-    func removeClip(_ channelClip: ChannelClip) async {
-        do {
-            try await ChannelService.shared.removeClipFromChannel(channelClipId: channelClip.id)
-            clips.removeAll { $0.id == channelClip.id }
         } catch {
             errorMessage = error.localizedDescription
             showError = true
