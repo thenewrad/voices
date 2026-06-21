@@ -2,15 +2,20 @@ import SwiftUI
 
 struct ChannelFeedView: View {
     let channel: Channel
+    /// True when shown modally (e.g. right after accepting an invite), where
+    /// there's no navigation stack to provide a back button.
+    var isPresentedModally: Bool = false
 
     @StateObject private var vm: ChannelFeedViewModel
     @EnvironmentObject private var authService: AuthService
+    @Environment(\.dismiss) private var dismiss
     @State private var showSettings = false
     @State private var showInvite = false
     @State private var showRecord = false
 
-    init(channel: Channel) {
+    init(channel: Channel, isPresentedModally: Bool = false) {
         self.channel = channel
+        self.isPresentedModally = isPresentedModally
         _vm = StateObject(wrappedValue: ChannelFeedViewModel(channel: channel))
     }
 
@@ -70,6 +75,18 @@ struct ChannelFeedView: View {
         .navigationTitle(channel.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            if isPresentedModally {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "chevron.left")
+                            Text("Channels")
+                        }
+                    }
+                }
+            }
             ToolbarItemGroup(placement: .topBarTrailing) {
                 if vm.userRole != nil, #available(iOS 17.0, *) {
                     Button {

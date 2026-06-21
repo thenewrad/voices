@@ -122,7 +122,7 @@ struct ChannelInvitesInboxView: View {
         .refreshable { await load() }
         .sheet(item: $acceptedChannel) { channel in
             NavigationStack {
-                ChannelFeedView(channel: channel)
+                ChannelFeedView(channel: channel, isPresentedModally: true)
             }
         }
         .alert("Error", isPresented: Binding(
