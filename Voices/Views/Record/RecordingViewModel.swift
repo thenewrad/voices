@@ -386,7 +386,7 @@ final class RecordingViewModel: NSObject, ObservableObject {
                             .upload(path, data: data, options: FileOptions(contentType: "audio/mp4"))
 
                         let remaining = await self.timeRemaining
-                        let row = ClipInsert(id: clipId, user_id: userId, audio_url: path, lat: lat, lng: lng, duration_seconds: Int(maxDuration - remaining), location_display: locationDisplay)
+                        let row = ClipInsert(id: clipId, user_id: userId, audio_url: path, lat: lat, lng: lng, duration_seconds: Int(maxDuration - remaining), location_display: locationDisplay, channel_id: self.channelId)
                         try await SupabaseService.shared.client
                             .from("clips")
                             .insert(row)
@@ -476,6 +476,7 @@ private struct ClipInsert: Encodable {
     let lng: Double?
     let duration_seconds: Int
     let location_display: String?
+    let channel_id: UUID?
 }
 
 @available(iOS 17.0, *)

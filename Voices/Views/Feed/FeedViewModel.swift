@@ -19,6 +19,7 @@ final class FeedViewModel: ObservableObject {
             let fetched: [Clip] = try await SupabaseService.shared.client
                 .from("clips")
                 .select("id, user_id, audio_url, lat, lng, created_at, play_count, reply_count, duration_seconds, title, like_count, location_display, profiles!clips_user_id_fkey(username, avatar_url, beep_tone)")
+                .is("channel_id", value: nil)
                 .order("created_at", ascending: false)
                 .limit(50)
                 .execute()

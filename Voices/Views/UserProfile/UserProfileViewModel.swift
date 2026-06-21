@@ -52,6 +52,7 @@ final class UserProfileViewModel: ObservableObject {
                 .from("clips")
                 .select("id, user_id, audio_url, lat, lng, created_at, play_count, reply_count, duration_seconds, title, like_count, location_display, profiles!clips_user_id_fkey(username, avatar_url, beep_tone)")
                 .eq("user_id", value: userId.uuidString)
+                .is("channel_id", value: nil)
                 .order("created_at", ascending: false)
                 .execute()
                 .value

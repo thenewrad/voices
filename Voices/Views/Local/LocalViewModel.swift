@@ -126,6 +126,7 @@ final class LocalViewModel: NSObject, ObservableObject {
                 .lte("lat", value: "\(lat + latDelta)")
                 .gte("lng", value: "\(lng - lngDelta)")
                 .lte("lng", value: "\(lng + lngDelta)")
+                .is("channel_id", value: nil)
                 .limit(200)
                 .execute()
                 .value
@@ -153,6 +154,7 @@ final class LocalViewModel: NSObject, ObservableObject {
                 .select(Self.clipSelect)
                 .not("lat", operator: .is, value: "null")
                 .not("lng", operator: .is, value: "null")
+                .is("channel_id", value: nil)
                 .limit(500)
                 .execute()
                 .value
