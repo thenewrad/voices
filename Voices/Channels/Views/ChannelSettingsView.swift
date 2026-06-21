@@ -10,9 +10,12 @@ struct ChannelSettingsView: View {
     @State private var isPublic: Bool
     @State private var requiresApproval: Bool
     @State private var isMonetized: Bool
+    @State private var avatarURL: String?
     @State private var members: [ChannelMember] = []
     @State private var isLoading = false
     @State private var isSaving = false
+    @State private var isUploadingIcon = false
+    @State private var showImagePicker = false
     @State private var showDeleteConfirm = false
     @State private var error: String?
 
@@ -23,11 +26,35 @@ struct ChannelSettingsView: View {
         _isPublic         = State(initialValue: channel.isPublic)
         _requiresApproval = State(initialValue: channel.requiresApproval)
         _isMonetized      = State(initialValue: channel.isMonetized)
+        _avatarURL        = State(initialValue: channel.avatarURL)
     }
 
     var body: some View {
         NavigationStack {
             Form {
+                Section {
+                    HStack {
+                        Spacer()
+                        VStack(spacing: 10) {
+                            ChannelAvatarView(name: name, size: 88, avatarURL: avatarURL)
+                                .overlay {
+                                    if isUploadingIcon {
+                                        RoundedRectangle(cornerRadius: 88 * 0.22)
+                                            .fill(.black.opacity(0.4))
+                                        ProgressView().tint(.white)
+                                    }
+                                }
+                            Button(avatarURL == nil ? "Upload Icon" : "Change Icon") {
+                                showImagePicker = true
+                            }
+                            .font(.subheadline)
+                            .disabled(isUploadingIcon)
+                        }
+                        Spacer()
+                    }
+                    .padding(.vertical, 8)
+                }
+
                 Section("Info") {
                     TextField("Channel name", text: $name)
                     TextField("Description", text: $description, axis: .vertical)
@@ -101,6 +128,11 @@ struct ChannelSettingsView: View {
                 Text("This is permanent and cannot be undone.")
             }
             .task { await loadMembers() }
+            .sheet(isPresented: $showImagePicker) {
+                ImagePickerView { image in
+                    Task { await uploadIcon(image) }
+                }
+            }
         }
     }
 
@@ -109,6 +141,17 @@ struct ChannelSettingsView: View {
         defer { isLoading = false }
         do {
             members = try await ChannelService.shared.fetchMembers(channelId: channel.id)
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
+    private func uploadIcon(_ image: UIImage) async {
+        isUploadingIcon = true
+        defer { isUploadingIcon = false }
+        guard let jpeg = image.jpegData(compressionQuality: 0.8) else { return }
+        do {
+            avatarURL = try await ChannelService.shared.uploadChannelIcon(channelId: channel.id, jpeg: jpeg)
         } catch {
             self.error = error.localizedDescription
         }

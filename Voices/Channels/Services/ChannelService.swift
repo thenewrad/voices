@@ -85,6 +85,30 @@ class ChannelService: ObservableObject {
             .execute()
     }
 
+    /// Admin-only (enforced by storage RLS). Returns the new cache-busted URL.
+    func uploadChannelIcon(channelId: UUID, jpeg: Data) async throws -> String {
+        let path = "\(channelId.uuidString.lowercased())/icon.jpg"
+        let timestamp = Int(Date().timeIntervalSince1970)
+
+        _ = try await client.storage
+            .from("channel-icons")
+            .upload(path, data: jpeg, options: FileOptions(contentType: "image/jpeg", upsert: true))
+
+        let publicURL = try client.storage
+            .from("channel-icons")
+            .getPublicURL(path: path)
+        let versionedURL = "\(publicURL.absoluteString)?v=\(timestamp)"
+
+        struct IconUpdate: Encodable { let avatar_url: String }
+        try await client
+            .from("channels")
+            .update(IconUpdate(avatar_url: versionedURL))
+            .eq("id", value: channelId)
+            .execute()
+
+        return versionedURL
+    }
+
     func archiveChannel(id: UUID) async throws {
         try await client
             .from("channels")

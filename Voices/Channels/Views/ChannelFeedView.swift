@@ -127,20 +127,7 @@ struct ChannelFeedView: View {
 
     private var channelHeader: some View {
         VStack(spacing: 12) {
-            // Avatar
-            Group {
-                if let url = channel.avatarURL, let parsed = URL(string: url) {
-                    AsyncImage(url: parsed) { img in
-                        img.resizable().scaledToFill()
-                    } placeholder: {
-                        placeholderAvatar
-                    }
-                } else {
-                    placeholderAvatar
-                }
-            }
-            .frame(width: 72, height: 72)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            ChannelAvatarView(name: channel.name, size: 72, avatarURL: channel.avatarURL)
 
             Text(channel.name)
                 .font(.title2)
@@ -201,15 +188,6 @@ struct ChannelFeedView: View {
             .disabled(vm.isActionLoading)
         }
         // admins/mods/creators don't see follow button
-    }
-
-    private var placeholderAvatar: some View {
-        ZStack {
-            Color(.systemGray4)
-            Image(systemName: "antenna.radiowaves.left.and.right")
-                .font(.title)
-                .foregroundStyle(.secondary)
-        }
     }
 
     private func statView(value: String, label: String) -> some View {

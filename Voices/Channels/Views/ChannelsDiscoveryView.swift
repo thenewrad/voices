@@ -170,20 +170,7 @@ struct ChannelRowView: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            // Avatar
-            Group {
-                if let url = channel.avatarURL, let parsed = URL(string: url) {
-                    AsyncImage(url: parsed) { img in
-                        img.resizable().scaledToFill()
-                    } placeholder: {
-                        channelPlaceholder
-                    }
-                } else {
-                    channelPlaceholder
-                }
-            }
-            .frame(width: 50, height: 50)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            ChannelAvatarView(name: channel.name, size: 50, avatarURL: channel.avatarURL)
 
             VStack(alignment: .leading, spacing: 3) {
                 HStack {
@@ -223,13 +210,6 @@ struct ChannelRowView: View {
         }
     }
 
-    private var channelPlaceholder: some View {
-        ZStack {
-            Color(.systemGray4)
-            Image(systemName: "antenna.radiowaves.left.and.right")
-                .foregroundStyle(.secondary)
-        }
-    }
 }
 
 // MARK: - Empty State
