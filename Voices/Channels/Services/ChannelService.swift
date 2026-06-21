@@ -238,7 +238,7 @@ class ChannelService: ObservableObject {
 
         return try await client
             .from("channel_invites")
-            .select("*, channels(id, name, avatar_url, is_public, category, follower_count, clip_count, created_by, requires_approval, is_monetized, is_archived, created_at)")
+            .select("*, channels(id, name, description, avatar_url, is_public, category, created_by, follower_count, clip_count, requires_approval, is_monetized, max_members, is_archived, created_at)")
             .eq("invited_user_id", value: userId)
             .eq("status", value: "pending")
             .execute()

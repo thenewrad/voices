@@ -73,6 +73,7 @@ struct ChannelInvitesInboxView: View {
     @State private var invites: [ChannelInvite] = []
     @State private var isLoading = false
     @State private var error: String?
+    @State private var acceptedChannel: Channel?
 
     var body: some View {
         Group {
@@ -92,6 +93,11 @@ struct ChannelInvitesInboxView: View {
         .navigationTitle("Channel Invites")
         .task { await load() }
         .refreshable { await load() }
+        .sheet(item: $acceptedChannel) { channel in
+            NavigationStack {
+                ChannelFeedView(channel: channel)
+            }
+        }
     }
 
     private func load() async {
@@ -108,6 +114,9 @@ struct ChannelInvitesInboxView: View {
         do {
             try await ChannelService.shared.respondToInvite(id: invite.id, accept: accept)
             invites.removeAll { $0.id == invite.id }
+            if accept {
+                acceptedChannel = invite.channel
+            }
         } catch {
             self.error = error.localizedDescription
         }
