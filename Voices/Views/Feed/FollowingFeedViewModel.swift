@@ -35,7 +35,7 @@ final class FollowingFeedViewModel: ObservableObject {
                 .execute()
                 .value
 
-            let hidden = await UserRelationshipService.shared.hiddenUserIDs
+            let hidden = UserRelationshipService.shared.hiddenUserIDs
             let filtered = fetched.filter { clip in
                 guard let uid = clip.user_id else { return true }
                 return !hidden.contains(uid)

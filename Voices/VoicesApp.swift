@@ -35,7 +35,7 @@ struct VoicesApp: App {
         guard let url = URL(string: "https://vqibjqieliplqeldchky.supabase.co/auth/v1/health") else { return }
         var request = URLRequest(url: url, timeoutInterval: 5)
         request.httpMethod = "GET"
-        try? await URLSession.shared.data(for: request)
+        _ = try? await URLSession.shared.data(for: request)
     }
 
     @ViewBuilder

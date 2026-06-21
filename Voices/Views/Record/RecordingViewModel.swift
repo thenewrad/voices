@@ -392,7 +392,7 @@ final class RecordingViewModel: NSObject, ObservableObject {
                             .insert(row)
                             .execute()
 
-                        if let channelId = await self.channelId {
+                        if let channelId = self.channelId {
                             try await ChannelService.shared.postClipToChannel(channelId: channelId, clipId: clipId)
                         }
                     }

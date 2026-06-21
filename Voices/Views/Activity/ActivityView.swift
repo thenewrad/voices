@@ -252,7 +252,7 @@ struct ActivityView: View {
 
     private func deleteMessage(_ item: ActivityItem) async {
         guard let msgId = item.dmMessageId else { return }
-        try? await SupabaseService.shared.client
+        _ = try? await SupabaseService.shared.client
             .from("direct_messages")
             .delete()
             .eq("id", value: msgId.uuidString)

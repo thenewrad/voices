@@ -130,7 +130,7 @@ final class LocalViewModel: NSObject, ObservableObject {
                 .execute()
                 .value
 
-            let hidden = await UserRelationshipService.shared.hiddenUserIDs
+            let hidden = UserRelationshipService.shared.hiddenUserIDs
             let centerLoc = CLLocation(latitude: lat, longitude: lng)
 
             var inner: [(Clip, Double)] = []

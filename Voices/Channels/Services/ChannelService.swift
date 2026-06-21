@@ -115,7 +115,7 @@ class ChannelService: ObservableObject {
             query = query.eq("category", value: category)
         }
         if let search, !search.isEmpty {
-            query = query.ilike("name", value: "%\(search)%")
+            query = query.ilike("name", pattern: "%\(search)%")
         }
 
         return try await query
