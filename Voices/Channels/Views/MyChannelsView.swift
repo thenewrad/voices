@@ -16,7 +16,9 @@ struct MyChannelsView: View {
                 )
             } else {
                 List(vm.channels) { channel in
-                    NavigationLink(value: channel) {
+                    NavigationLink {
+                        ChannelFeedView(channel: channel)
+                    } label: {
                         ChannelRowView(channel: channel)
                     }
                     .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
