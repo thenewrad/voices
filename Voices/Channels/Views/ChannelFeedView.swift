@@ -138,8 +138,7 @@ struct ChannelFeedView: View {
             }
 
             HStack(spacing: 20) {
-                statView(value: channel.followerCount.abbreviated, label: "followers")
-                statView(value: channel.clipCount.abbreviated, label: "clips")
+                statView(value: channel.followerCount.abbreviated, label: "members")
                 if let cat = channel.category {
                     statView(value: cat, label: "category")
                 }
