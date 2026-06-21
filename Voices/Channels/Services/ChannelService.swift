@@ -259,12 +259,9 @@ class ChannelService: ObservableObject {
             .execute()
             .value
 
-        try await client
-            .from("channel_invites")
-            .update(["status": newStatus])
-            .eq("id", value: id)
-            .execute()
-
+        // Join while the invite is still "pending" — the RLS policy that lets
+        // an invited user insert themselves checks for that exact status, so
+        // this must happen before the invite's status is updated below.
         if accept {
             struct Insert: Encodable {
                 let channel_id: UUID
@@ -273,9 +270,15 @@ class ChannelService: ObservableObject {
             }
             try await client
                 .from("channel_members")
-                .insert(Insert(channel_id: invite.channelId, user_id: userId, role: "creator"))
+                .insert(Insert(channel_id: invite.channelId, user_id: userId, role: "member"))
                 .execute()
         }
+
+        try await client
+            .from("channel_invites")
+            .update(["status": newStatus])
+            .eq("id", value: id)
+            .execute()
     }
 
     // MARK: - Channel Clips

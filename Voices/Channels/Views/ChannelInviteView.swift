@@ -125,6 +125,14 @@ struct ChannelInvitesInboxView: View {
                 ChannelFeedView(channel: channel)
             }
         }
+        .alert("Error", isPresented: Binding(
+            get: { error != nil },
+            set: { if !$0 { error = nil } }
+        )) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(error ?? "")
+        }
     }
 
     private func load() async {
