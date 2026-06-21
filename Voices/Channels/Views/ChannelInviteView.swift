@@ -6,18 +6,44 @@ struct ChannelInviteView: View {
 
     let channelId: UUID
 
-    @State private var username = ""
+    /// Same live-lookup-as-you-type mechanism as the main Search tab.
+    @StateObject private var search = SearchViewModel()
     @State private var isSending = false
     @State private var successMessage: String?
     @State private var error: String?
+
+    private var trimmedUsername: String {
+        search.searchText.trimmingCharacters(in: .whitespaces)
+    }
 
     var body: some View {
         NavigationStack {
             Form {
                 Section {
-                    TextField("Username", text: $username)
+                    TextField("Username", text: $search.searchText)
                         .autocorrectionDisabled()
                         .textInputAutocapitalization(.never)
+
+                    if search.isLoading {
+                        HStack {
+                            Spacer()
+                            ProgressView()
+                            Spacer()
+                        }
+                    } else {
+                        ForEach(search.results) { user in
+                            Button {
+                                search.searchText = user.username
+                                search.results = []
+                            } label: {
+                                HStack(spacing: 10) {
+                                    AvatarView(initials: user.initials, username: user.username, size: 32, avatarURL: user.avatar_url)
+                                    Text(user.username)
+                                        .foregroundStyle(.primary)
+                                }
+                            }
+                        }
+                    }
                 } header: {
                     Text("Invite by username")
                 } footer: {
@@ -45,7 +71,7 @@ struct ChannelInviteView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Send") { Task { await send() } }
-                        .disabled(username.trimmingCharacters(in: .whitespaces).isEmpty || isSending)
+                        .disabled(trimmedUsername.isEmpty || isSending)
                 }
             }
         }
@@ -55,11 +81,12 @@ struct ChannelInviteView: View {
         isSending = true
         error = nil
         successMessage = nil
-        let trimmed = username.trimmingCharacters(in: .whitespaces)
+        let trimmed = trimmedUsername
         do {
             try await ChannelService.shared.inviteMember(channelId: channelId, username: trimmed)
             successMessage = "Invite sent to @\(trimmed)"
-            username = ""
+            search.searchText = ""
+            search.results = []
         } catch {
             self.error = error.localizedDescription
         }
