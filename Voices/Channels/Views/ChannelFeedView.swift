@@ -7,7 +7,6 @@ struct ChannelFeedView: View {
     var isPresentedModally: Bool = false
 
     @StateObject private var vm: ChannelFeedViewModel
-    @EnvironmentObject private var authService: AuthService
     @Environment(\.dismiss) private var dismiss
     @State private var showSettings = false
     @State private var showInvite = false
@@ -19,14 +18,7 @@ struct ChannelFeedView: View {
         _vm = StateObject(wrappedValue: ChannelFeedViewModel(channel: channel))
     }
 
-    private var currentUserId: UUID? {
-        if case .authenticated(let profile) = authService.appState { return profile.id }
-        return nil
-    }
-
-    private func canRemove(_ channelClip: ChannelClip) -> Bool {
-        vm.userRole?.canRemoveClips == true || channelClip.postedBy == currentUserId
-    }
+    private var canRemove: Bool { vm.userRole?.canRemoveClips == true }
 
     var body: some View {
         ScrollView {
@@ -51,10 +43,12 @@ struct ChannelFeedView: View {
                     let allClips = vm.clips.compactMap(\.clip)
                     ForEach(vm.clips) { channelClip in
                         if let clip = channelClip.clip {
-                            ClipRow(clip: clip, allClips: allClips)
+                            ClipRow(clip: clip, allClips: allClips, onDelete: {
+                                Task { await vm.deleteOwnPost(channelClip) }
+                            })
                                 .background(AppTheme.canvasBlack)
                                 .overlay(alignment: .topTrailing) {
-                                    if canRemove(channelClip) {
+                                    if canRemove {
                                         Menu {
                                             Button("Remove from channel", role: .destructive) {
                                                 Task { await vm.removeClip(channelClip) }
@@ -264,6 +258,29 @@ class ChannelFeedViewModel: ObservableObject {
         } catch {
             errorMessage = error.localizedDescription
             showError = true
+        }
+    }
+
+    /// Full delete (not just unlinking from the channel) — channel_clips
+    /// cascades automatically since clip_id references clips(id) on delete cascade.
+    func deleteOwnPost(_ channelClip: ChannelClip) async {
+        guard let clip = channelClip.clip else { return }
+        clips.removeAll { $0.id == channelClip.id }
+        do {
+            let userId = try await SupabaseService.shared.client.auth.session.user.id
+            try await SupabaseService.shared.client
+                .from("clips")
+                .delete()
+                .eq("id", value: clip.id.uuidString)
+                .eq("user_id", value: userId.uuidString)
+                .execute()
+            _ = try? await SupabaseService.shared.client.storage
+                .from("audio")
+                .remove(paths: [clip.audio_url])
+        } catch {
+            errorMessage = error.localizedDescription
+            showError = true
+            await load()
         }
     }
 }
