@@ -44,8 +44,10 @@ struct NowPlayingView: View {
                 .padding(.bottom, 32)
 
                 // Transport
-                HStack(spacing: 36) {
-                    transportButton("backward.fill", size: 22) { player.skipBack() }
+                HStack(spacing: 22) {
+                    transportButton("backward.fill", size: 18) { player.skipBack() }
+
+                    transportButton("gobackward.10", size: 26) { player.skip(by: -10) }
 
                     Button { player.togglePlayPause() } label: {
                         ZStack {
@@ -59,7 +61,9 @@ struct NowPlayingView: View {
                     }
                     .buttonStyle(.plain)
 
-                    transportButton("forward.fill", size: 22) { player.skipForward() }
+                    transportButton("goforward.10", size: 26) { player.skip(by: 10) }
+
+                    transportButton("forward.fill", size: 18) { player.skipForward() }
                 }
                 .padding(.bottom, 32)
 

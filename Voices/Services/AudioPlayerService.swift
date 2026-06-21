@@ -132,6 +132,18 @@ final class AudioPlayerService: ObservableObject {
         updateNowPlayingInfo()
     }
 
+    /// Jumps forward (positive) or back (negative) by the given number of seconds.
+    func skip(by seconds: TimeInterval) {
+        guard let item = player?.currentItem else { return }
+        let dur = CMTimeGetSeconds(item.duration)
+        guard dur.isFinite, dur > 0 else { return }
+        let target = max(0, min(dur, currentTime + seconds))
+        player?.seek(to: CMTime(seconds: target, preferredTimescale: 600))
+        progress = target / dur
+        currentTime = target
+        updateNowPlayingInfo()
+    }
+
     // MARK: - Playback
 
     private func playCurrentClip() async {
@@ -245,6 +257,20 @@ final class AudioPlayerService: ObservableObject {
         center.previousTrackCommand.isEnabled = true
         center.previousTrackCommand.addTarget { [weak self] _ in
             Task { @MainActor [weak self] in self?.skipBack() }
+            return .success
+        }
+
+        center.skipForwardCommand.isEnabled = true
+        center.skipForwardCommand.preferredIntervals = [10]
+        center.skipForwardCommand.addTarget { [weak self] _ in
+            Task { @MainActor [weak self] in self?.skip(by: 10) }
+            return .success
+        }
+
+        center.skipBackwardCommand.isEnabled = true
+        center.skipBackwardCommand.preferredIntervals = [10]
+        center.skipBackwardCommand.addTarget { [weak self] _ in
+            Task { @MainActor [weak self] in self?.skip(by: -10) }
             return .success
         }
 
