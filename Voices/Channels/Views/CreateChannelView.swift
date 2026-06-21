@@ -40,7 +40,7 @@ struct CreateChannelView: View {
                 // Visibility
                 Section {
                     Toggle(isOn: $isPublic) {
-                        Label("Public channel", systemImage: isPublic ? "globe" : "lock.fill")
+                        Label(isPublic ? "Public channel" : "Private channel", systemImage: isPublic ? "globe" : "lock.fill")
                     }
                     if isPublic {
                         Toggle("Require approval to join", isOn: $requiresApproval)
