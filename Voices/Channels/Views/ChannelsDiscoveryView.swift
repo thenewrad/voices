@@ -74,6 +74,14 @@ struct ChannelsDiscoveryView: View {
                 ToolbarItem(placement: .topBarLeading) {
                     NavigationLink(destination: ChannelInvitesInboxView()) {
                         Image(systemName: "envelope")
+                            .overlay(alignment: .topTrailing) {
+                                if vm.hasPendingInvites {
+                                    Circle()
+                                        .fill(.red)
+                                        .frame(width: 8, height: 8)
+                                        .offset(x: 4, y: -4)
+                                }
+                            }
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
@@ -93,6 +101,7 @@ struct ChannelsDiscoveryView: View {
                 }
             }
             .task { await vm.load() }
+            .onAppear { Task { await vm.checkPendingInvites() } }
             .alert("Error", isPresented: $vm.showError) {
                 Button("OK", role: .cancel) {}
             } message: {
@@ -112,6 +121,12 @@ class ChannelsDiscoveryViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var showError = false
     @Published var errorMessage = ""
+    @Published var hasPendingInvites = false
+
+    /// Silent — a failed badge check shouldn't surface an error alert.
+    func checkPendingInvites() async {
+        hasPendingInvites = !((try? await ChannelService.shared.fetchMyInvites())?.isEmpty ?? true)
+    }
 
     func load() async {
         isLoading = true
