@@ -4,6 +4,7 @@ struct ChannelFeedView: View {
     let channel: Channel
 
     @StateObject private var vm: ChannelFeedViewModel
+    @EnvironmentObject private var authService: AuthService
     @State private var showSettings = false
     @State private var showInvite = false
     @State private var showRecord = false
@@ -11,6 +12,15 @@ struct ChannelFeedView: View {
     init(channel: Channel) {
         self.channel = channel
         _vm = StateObject(wrappedValue: ChannelFeedViewModel(channel: channel))
+    }
+
+    private var currentUserId: UUID? {
+        if case .authenticated(let profile) = authService.appState { return profile.id }
+        return nil
+    }
+
+    private func canRemove(_ channelClip: ChannelClip) -> Bool {
+        vm.userRole?.canRemoveClips == true || channelClip.postedBy == currentUserId
     }
 
     var body: some View {
@@ -33,11 +43,26 @@ struct ChannelFeedView: View {
                     )
                     .padding(.top, 40)
                 } else {
+                    let allClips = vm.clips.compactMap(\.clip)
                     ForEach(vm.clips) { channelClip in
-                        ChannelClipRow(channelClip: channelClip, userRole: vm.userRole) {
-                            Task { await vm.removeClip(channelClip) }
+                        if let clip = channelClip.clip {
+                            ClipRow(clip: clip, allClips: allClips)
+                                .background(AppTheme.canvasBlack)
+                                .overlay(alignment: .topTrailing) {
+                                    if canRemove(channelClip) {
+                                        Menu {
+                                            Button("Remove from channel", role: .destructive) {
+                                                Task { await vm.removeClip(channelClip) }
+                                            }
+                                        } label: {
+                                            Image(systemName: "ellipsis.circle.fill")
+                                                .foregroundStyle(.secondary)
+                                                .padding(10)
+                                        }
+                                    }
+                                }
+                            Divider().overlay(Color(hex: "3A2820"))
                         }
-                        Divider()
                     }
                 }
             }
@@ -176,102 +201,6 @@ struct ChannelFeedView: View {
             Text(value).font(.headline)
             Text(label).font(.caption).foregroundStyle(.secondary)
         }
-    }
-}
-
-// MARK: - ChannelClipRow
-
-struct ChannelClipRow: View {
-    let channelClip: ChannelClip
-    let userRole: ChannelRole?
-    let onRemove: () -> Void
-
-    var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            // Poster avatar placeholder
-            Circle()
-                .fill(Color(.systemGray4))
-                .frame(width: 36, height: 36)
-                .overlay {
-                    Image(systemName: "person.fill")
-                        .foregroundStyle(.secondary)
-                }
-
-            VStack(alignment: .leading, spacing: 4) {
-                HStack {
-                    Text(channelClip.poster?.username ?? "Unknown")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                    Spacer()
-                    Text(channelClip.postedAt, style: .relative)
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                }
-
-                if let clip = channelClip.clip {
-                    // Title
-                    if !clip.title.isEmpty {
-                        Text(clip.title)
-                            .font(.subheadline)
-                    }
-
-                    // Audio player stub — wire up to your existing AudioPlayerView
-                    AudioPlayerStub(durationSeconds: clip.durationSeconds, audioURL: clip.audioURL)
-
-                    HStack(spacing: 16) {
-                        Label(clip.playCount.abbreviated, systemImage: "play.fill")
-                        Label(clip.likeCount.abbreviated, systemImage: "heart")
-                    }
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                }
-            }
-
-            // Remove button for admin/mod
-            if userRole?.canRemoveClips == true {
-                Menu {
-                    Button("Remove from channel", role: .destructive, action: onRemove)
-                } label: {
-                    Image(systemName: "ellipsis")
-                        .foregroundStyle(.secondary)
-                }
-            }
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-    }
-}
-
-/// Stub — replace with your real AudioPlayerView
-struct AudioPlayerStub: View {
-    let durationSeconds: Int
-    let audioURL: String
-
-    var body: some View {
-        HStack(spacing: 8) {
-            Button {
-                // play action
-            } label: {
-                Image(systemName: "play.circle.fill")
-                    .font(.title2)
-                    .foregroundStyle(AppTheme.gold)
-            }
-            RoundedRectangle(cornerRadius: 2)
-                .fill(Color(.systemGray4))
-                .frame(height: 4)
-            Text(durationSeconds.formattedDuration)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .monospacedDigit()
-        }
-    }
-}
-
-extension Int {
-    var formattedDuration: String {
-        let m = self / 60
-        let s = self % 60
-        return String(format: "%d:%02d", m, s)
     }
 }
 

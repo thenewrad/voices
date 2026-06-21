@@ -86,16 +86,16 @@ struct ChannelMemberProfile: Codable {
 
 // MARK: - ChannelClip
 
-struct ChannelClip: Codable, Identifiable {
+struct ChannelClip: Decodable, Identifiable {
     let id: UUID
     let channelId: UUID
     let clipId: UUID
     let postedBy: UUID
     let postedAt: Date
 
-    // Joined
-    var clip: ClipDetail?
-    var poster: ChannelMemberProfile?
+    // Joined — the clip's own user_id always equals postedBy, since the
+    // only way to post is recording directly from the channel page.
+    var clip: Clip?
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -104,29 +104,6 @@ struct ChannelClip: Codable, Identifiable {
         case postedBy  = "posted_by"
         case postedAt  = "posted_at"
         case clip      = "clips"
-        case poster    = "profiles"
-    }
-}
-
-struct ClipDetail: Codable, Identifiable {
-    let id: UUID
-    let audioURL: String
-    let durationSeconds: Int
-    let title: String
-    let transcript: String
-    let playCount: Int
-    let likeCount: Int
-    let createdAt: Date
-
-    enum CodingKeys: String, CodingKey {
-        case id
-        case audioURL        = "audio_url"
-        case durationSeconds = "duration_seconds"
-        case title
-        case transcript
-        case playCount       = "play_count"
-        case likeCount       = "like_count"
-        case createdAt       = "created_at"
     }
 }
 

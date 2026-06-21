@@ -285,8 +285,7 @@ class ChannelService: ObservableObject {
             .from("channel_clips")
             .select("""
                 *,
-                clips(id, audio_url, duration_seconds, title, transcript, play_count, like_count, created_at),
-                profiles(username, avatar_url)
+                clips(id, user_id, audio_url, lat, lng, created_at, play_count, reply_count, duration_seconds, title, like_count, location_display, profiles!clips_user_id_fkey(username, avatar_url, beep_tone))
             """)
             .eq("channel_id", value: channelId)
             .order("posted_at", ascending: false)
