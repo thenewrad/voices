@@ -2,9 +2,16 @@ import SwiftUI
 
 @available(iOS 17.0, *)
 struct RecordView: View {
-    @StateObject private var vm = RecordingViewModel()
+    @StateObject private var vm: RecordingViewModel
     @State private var showCancelAlert = false
     @Environment(\.dismiss) private var dismiss
+
+    private let channelName: String?
+
+    init(channelId: UUID? = nil, channelName: String? = nil) {
+        _vm = StateObject(wrappedValue: RecordingViewModel(channelId: channelId))
+        self.channelName = channelName
+    }
 
     private var isActive: Bool { vm.isRecording || vm.isPaused }
     private var isPreview: Bool { vm.isPreviewingRecording }
@@ -252,10 +259,12 @@ struct RecordView: View {
 
     private var recordHeader: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Drop a Vox")
+            Text(channelName.map { "Post to \($0)" } ?? "Drop a Vox")
                 .font(.largeTitle.bold())
                 .foregroundStyle(.white)
-            Text("Post what's on your mind. Your posts will be tagged to the place you dropped it for others to find.")
+            Text(channelName != nil
+                ? "This clip will be posted to the channel."
+                : "Post what's on your mind. Your posts will be tagged to the place you dropped it for others to find.")
                 .font(.footnote)
                 .foregroundStyle(AppTheme.gold)
                 .fixedSize(horizontal: false, vertical: true)

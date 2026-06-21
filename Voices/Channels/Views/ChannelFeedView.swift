@@ -6,7 +6,7 @@ struct ChannelFeedView: View {
     @StateObject private var vm: ChannelFeedViewModel
     @State private var showSettings = false
     @State private var showInvite = false
-    @State private var showPostClip = false
+    @State private var showRecord = false
 
     init(channel: Channel) {
         self.channel = channel
@@ -46,11 +46,12 @@ struct ChannelFeedView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
-                if vm.userRole?.canPost == true {
+                if vm.userRole != nil, #available(iOS 17.0, *) {
                     Button {
-                        showPostClip = true
+                        showRecord = true
                     } label: {
-                        Image(systemName: "waveform.badge.plus")
+                        Image(systemName: "mic.circle.fill")
+                            .foregroundStyle(.red)
                     }
                 }
                 if vm.userRole?.canChangeSettings == true {
@@ -70,9 +71,9 @@ struct ChannelFeedView: View {
         .sheet(isPresented: $showInvite) {
             ChannelInviteView(channelId: channel.id)
         }
-        .sheet(isPresented: $showPostClip) {
-            PostClipToChannelView(channelId: channel.id) {
-                Task { await vm.load() }
+        .fullScreenCover(isPresented: $showRecord, onDismiss: { Task { await vm.load() } }) {
+            if #available(iOS 17.0, *) {
+                RecordView(channelId: channel.id, channelName: channel.name)
             }
         }
         .alert("Error", isPresented: $vm.showError) {
@@ -287,7 +288,7 @@ class ChannelFeedViewModel: ObservableObject {
 
     let channel: Channel
 
-    var canPost: Bool { userRole?.canPost ?? false }
+    var canPost: Bool { userRole != nil }
 
     init(channel: Channel) {
         self.channel = channel

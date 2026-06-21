@@ -48,9 +48,13 @@ final class RecordingViewModel: NSObject, ObservableObject {
     private let locationManager = CLLocationManager()
     private var lastLocation: CLLocation?
 
+    /// When set, the posted clip is also attached to this channel.
+    private let channelId: UUID?
+
     // MARK: - Init
 
-    override init() {
+    init(channelId: UUID? = nil) {
+        self.channelId = channelId
         super.init()
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
@@ -372,6 +376,8 @@ final class RecordingViewModel: NSObject, ObservableObject {
                     locationDisplay = await reverseGeocode(lat: lat, lng: lng)
                 }
 
+                let clipId = UUID()
+
                 // Upload + DB insert both covered by 30-second timeout
                 try await withThrowingTaskGroup(of: Void.self) { group in
                     group.addTask {
@@ -380,11 +386,15 @@ final class RecordingViewModel: NSObject, ObservableObject {
                             .upload(path, data: data, options: FileOptions(contentType: "audio/mp4"))
 
                         let remaining = await self.timeRemaining
-                        let row = ClipInsert(user_id: userId, audio_url: path, lat: lat, lng: lng, duration_seconds: Int(maxDuration - remaining), location_display: locationDisplay)
+                        let row = ClipInsert(id: clipId, user_id: userId, audio_url: path, lat: lat, lng: lng, duration_seconds: Int(maxDuration - remaining), location_display: locationDisplay)
                         try await SupabaseService.shared.client
                             .from("clips")
                             .insert(row)
                             .execute()
+
+                        if let channelId = await self.channelId {
+                            try await ChannelService.shared.postClipToChannel(channelId: channelId, clipId: clipId)
+                        }
                     }
                     group.addTask {
                         try await Task.sleep(nanoseconds: 60_000_000_000)
@@ -459,6 +469,7 @@ extension RecordingViewModel: CLLocationManagerDelegate {
 // MARK: - Supabase row model
 
 private struct ClipInsert: Encodable {
+    let id: UUID
     let user_id: UUID
     let audio_url: String
     let lat: Double?

@@ -34,7 +34,6 @@
 		929E2003007C7D5449DD76F2 /* ProfileSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78EC33DA7D50AB2D74BC418B /* ProfileSetupView.swift */; };
 		9855BF72B5A063510210F708 /* UserProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CE2B97838241AA1A3E7626A /* UserProfileViewModel.swift */; };
 		9D6D6413B207EFA92ADE4F9D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D417D060ED43380E18A48650 /* Assets.xcassets */; };
-		9F5AD09810E34AB1A613CCB4 /* PostClipToChannelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8EA3E730FE34307A684307A /* PostClipToChannelView.swift */; };
 		9FD15BAB7CD74D96B919615E /* ChannelSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5DDE33316CF47A08F847510 /* ChannelSettingsView.swift */; };
 		9FE7AFA107C14F5E80C237AA /* Channel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 465AF4BF4EEB40F7B0194512 /* Channel.swift */; };
 		A1B2C3D4E5F6A7B8C9D0E1F2 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = C3D4E5F6A7B8C9D0E1F2A3B4 /* Supabase */; };
@@ -123,7 +122,6 @@
 		B6DBCC2E91C8526CCE837F35 /* ActivityView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ActivityView.swift; path = Activity/ActivityView.swift; sourceTree = "<group>"; };
 		BB880088BB880088BB880088 /* UserRelationshipService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = UserRelationshipService.swift; sourceTree = "<group>"; };
 		BD5553705F144B9BB9FF590C /* AuthService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
-		C8EA3E730FE34307A684307A /* PostClipToChannelView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PostClipToChannelView.swift; sourceTree = "<group>"; };
 		CC110011CC110011CC110011 /* Reply.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Reply.swift; sourceTree = "<group>"; };
 		CC220022CC220022CC220022 /* AudioCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AudioCoordinator.swift; sourceTree = "<group>"; };
 		CC330033CC330033CC330033 /* ReplyRow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ReplyRow.swift; sourceTree = "<group>"; };
@@ -221,7 +219,6 @@
 				1B1F6628D7A14734A495D349 /* ChannelFeedView.swift */,
 				0D50029081FE449B8EB0A7AC /* ChannelInviteView.swift */,
 				4FC559317353469FA9711496 /* CreateChannelView.swift */,
-				C8EA3E730FE34307A684307A /* PostClipToChannelView.swift */,
 				E5DDE33316CF47A08F847510 /* ChannelSettingsView.swift */,
 				5B9A7520FDA24C0D9F31C43B /* MyChannelsView.swift */,
 			);
@@ -563,7 +560,6 @@
 				26F278124BC142AB89DF5C59 /* ChannelFeedView.swift in Sources */,
 				E521D65458444A148DF56788 /* ChannelInviteView.swift in Sources */,
 				E4BB5F9C4D1E40158B948098 /* CreateChannelView.swift in Sources */,
-				9F5AD09810E34AB1A613CCB4 /* PostClipToChannelView.swift in Sources */,
 				9FD15BAB7CD74D96B919615E /* ChannelSettingsView.swift in Sources */,
 				C0DAFBC962C2471BBF8F88BD /* MyChannelsView.swift in Sources */,
 			);
