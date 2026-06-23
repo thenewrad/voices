@@ -1,12 +1,36 @@
 import SwiftUI
 
+// MARK: - Filter Mode
+
+enum ChannelFilter: Hashable {
+    case myChannels
+    case all
+    case category(String)
+
+    var label: String {
+        switch self {
+        case .myChannels:       return "My Channels"
+        case .all:              return "All"
+        case .category(let c):  return c
+        }
+    }
+}
+
+// MARK: - Main View
+
 struct ChannelsDiscoveryView: View {
     @StateObject private var vm = ChannelsDiscoveryViewModel()
     @State private var showCreate = false
 
+    private let columns = [
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12)
+    ]
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
+
                 // Search bar
                 HStack(spacing: 10) {
                     Image(systemName: "magnifyingglass")
@@ -20,19 +44,27 @@ struct ChannelsDiscoveryView: View {
                 .padding(.horizontal)
                 .padding(.vertical, 8)
 
-                // Category pills
+                // Filter pills — My Channels first, then All, then categories
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
-                        CategoryPill(label: "All", isSelected: vm.selectedCategory == nil) {
-                            vm.selectedCategory = nil
+                        FilterPill(label: "My Channels",
+                                   isSelected: vm.activeFilter == .myChannels) {
+                            vm.activeFilter = .myChannels
                             Task { await vm.load() }
                         }
+
+                        FilterPill(label: "All",
+                                   isSelected: vm.activeFilter == .all) {
+                            vm.activeFilter = .all
+                            Task { await vm.load() }
+                        }
+
                         ForEach(ChannelCategory.allCases) { cat in
-                            CategoryPill(
+                            FilterPill(
                                 label: cat.rawValue,
-                                isSelected: vm.selectedCategory == cat.rawValue
+                                isSelected: vm.activeFilter == .category(cat.rawValue)
                             ) {
-                                vm.selectedCategory = cat.rawValue
+                                vm.activeFilter = .category(cat.rawValue)
                                 Task { await vm.load() }
                             }
                         }
@@ -44,33 +76,41 @@ struct ChannelsDiscoveryView: View {
 
                 Divider()
 
-                if vm.isLoading {
+                // Grid content
+                if vm.isLoading && vm.channels.isEmpty {
                     Spacer()
                     ProgressView()
                     Spacer()
                 } else if vm.channels.isEmpty {
                     Spacer()
-                    ChannelEmptyState(title: "No channels yet", systemImage: "antenna.radiowaves.left.and.right")
+                    ChannelEmptyState(
+                        title: vm.activeFilter == .myChannels ? "No channels yet" : "No channels found",
+                        systemImage: "antenna.radiowaves.left.and.right",
+                        description: vm.activeFilter == .myChannels
+                            ? "Create a channel or follow one to see it here."
+                            : "Try a different search or category."
+                    )
                     Spacer()
                 } else {
-                    List(vm.channels) { channel in
-                        NavigationLink(value: channel) {
-                            ChannelRowView(channel: channel)
+                    ScrollView {
+                        LazyVGrid(columns: columns, spacing: 12) {
+                            ForEach(vm.channels) { channel in
+                                NavigationLink(value: channel) {
+                                    ChannelTileView(channel: channel)
+                                }
+                                .buttonStyle(.plain)
+                            }
                         }
-                        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+                        .padding(.horizontal)
+                        .padding(.top, 12)
+                        .padding(.bottom, 24)
                     }
-                    .listStyle(.plain)
                     .refreshable { await vm.load() }
                 }
             }
             .navigationTitle("Channels")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    NavigationLink(destination: MyChannelsView()) {
-                        Image(systemName: "person.2")
-                    }
-                }
                 ToolbarItem(placement: .topBarLeading) {
                     NavigationLink(destination: ChannelInvitesInboxView()) {
                         Image(systemName: "envelope")
@@ -97,7 +137,11 @@ struct ChannelsDiscoveryView: View {
             }
             .sheet(isPresented: $showCreate) {
                 CreateChannelView { newChannel in
-                    vm.channels.insert(newChannel, at: 0)
+                    // New channel — user is admin, insert at top
+                    var ch = newChannel
+                    ch.currentUserRole = .admin
+                    vm.channels.insert(ch, at: 0)
+                    vm.activeFilter = .myChannels
                 }
             }
             .task { await vm.load() }
@@ -111,13 +155,97 @@ struct ChannelsDiscoveryView: View {
     }
 }
 
+// MARK: - Channel Tile (square grid card)
+
+struct ChannelTileView: View {
+    let channel: Channel
+
+    var body: some View {
+        GeometryReader { geo in
+            ZStack(alignment: .bottom) {
+
+                // Background: avatar image or gradient + initials placeholder
+                Group {
+                    if let url = channel.avatarURL, let parsed = URL(string: url) {
+                        AsyncImage(url: parsed) { phase in
+                            switch phase {
+                            case .success(let img):
+                                img.resizable().scaledToFill()
+                            default:
+                                gradientPlaceholder
+                            }
+                        }
+                    } else {
+                        gradientPlaceholder
+                    }
+                }
+                .frame(width: geo.size.width, height: geo.size.width)
+                .clipped()
+
+                // Bottom scrim + info
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(channel.name)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.white)
+                        .lineLimit(2)
+
+                    HStack(spacing: 6) {
+                        Label(channel.followerCount.abbreviated, systemImage: "person.2.fill")
+                            .font(.caption2)
+                            .foregroundStyle(.white.opacity(0.85))
+
+                        if let role = channel.currentUserRole, role != .follower {
+                            Text(role.rawValue.capitalized)
+                                .font(.caption2)
+                                .fontWeight(.semibold)
+                                .padding(.horizontal, 5)
+                                .padding(.vertical, 2)
+                                .background(.white.opacity(0.25), in: Capsule())
+                                .foregroundStyle(.white)
+                        }
+
+                        if !channel.isPublic {
+                            Image(systemName: "lock.fill")
+                                .font(.caption2)
+                                .foregroundStyle(.white.opacity(0.85))
+                        }
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(10)
+                .background(
+                    LinearGradient(
+                        colors: [.clear, .black.opacity(0.7)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+            }
+            .frame(width: geo.size.width, height: geo.size.width)
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+        }
+        .aspectRatio(1, contentMode: .fit)  // force square
+    }
+
+    private var gradientPlaceholder: some View {
+        ZStack {
+            ChannelAvatarView.gradient(for: channel.name)
+            let initials = ChannelAvatarView.initials(for: channel.name)
+            Text(initials.isEmpty ? "?" : initials)
+                .font(.system(size: 40, weight: .bold, design: .rounded))
+                .foregroundStyle(.white.opacity(0.85))
+        }
+    }
+}
+
 // MARK: - View Model
 
 @MainActor
 class ChannelsDiscoveryViewModel: ObservableObject {
     @Published var channels: [Channel] = []
     @Published var searchText = ""
-    @Published var selectedCategory: String?
+    @Published var activeFilter: ChannelFilter = .myChannels
     @Published var isLoading = false
     @Published var showError = false
     @Published var errorMessage = ""
@@ -132,20 +260,44 @@ class ChannelsDiscoveryViewModel: ObservableObject {
         isLoading = true
         defer { isLoading = false }
         do {
-            channels = try await ChannelService.shared.fetchPublicChannels(
-                category: selectedCategory,
-                search: searchText.isEmpty ? nil : searchText
-            )
+            switch activeFilter {
+            case .myChannels:
+                let all = try await ChannelService.shared.fetchMyChannels()
+                channels = all.sorted { lhs, rhs in
+                    roleOrder(lhs.currentUserRole) < roleOrder(rhs.currentUserRole)
+                }
+            case .all:
+                channels = try await ChannelService.shared.fetchPublicChannels(
+                    search: searchText.isEmpty ? nil : searchText
+                )
+            case .category(let cat):
+                channels = try await ChannelService.shared.fetchPublicChannels(
+                    category: cat,
+                    search: searchText.isEmpty ? nil : searchText
+                )
+            }
         } catch {
             errorMessage = error.localizedDescription
             showError = true
         }
     }
+
+    /// Lower number = shown first
+    private func roleOrder(_ role: ChannelRole?) -> Int {
+        switch role {
+        case .admin:      return 0
+        case .moderator:  return 1
+        case .creator:    return 2
+        case .member:     return 3
+        case .follower:   return 4
+        case nil:         return 5
+        }
+    }
 }
 
-// MARK: - Supporting Views
+// MARK: - Filter Pill
 
-struct CategoryPill: View {
+struct FilterPill: View {
     let label: String
     let isSelected: Bool
     let action: () -> Void
@@ -155,8 +307,8 @@ struct CategoryPill: View {
             Text(label)
                 .font(.subheadline)
                 .fontWeight(isSelected ? .semibold : .regular)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 7)
                 .background(isSelected ? AppTheme.gold : Color(.systemGray5),
                             in: Capsule())
                 .foregroundStyle(isSelected ? .white : .primary)
@@ -164,6 +316,8 @@ struct CategoryPill: View {
         .buttonStyle(.plain)
     }
 }
+
+// MARK: - ChannelRowView (kept for any list reuse elsewhere)
 
 struct ChannelRowView: View {
     let channel: Channel
@@ -174,42 +328,42 @@ struct ChannelRowView: View {
 
             VStack(alignment: .leading, spacing: 3) {
                 HStack {
-                    Text(channel.name)
-                        .font(.headline)
+                    Text(channel.name).font(.headline)
                     if !channel.isPublic {
-                        Image(systemName: "lock.fill")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        Image(systemName: "lock.fill").font(.caption).foregroundStyle(.secondary)
                     }
                 }
                 if let desc = channel.description, !desc.isEmpty {
-                    Text(desc)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
+                    Text(desc).font(.subheadline).foregroundStyle(.secondary).lineLimit(1)
                 }
                 HStack(spacing: 10) {
-                    Label("\(channel.followerCount.abbreviated)", systemImage: "person.2")
-                    Label("\(channel.clipCount.abbreviated)", systemImage: "waveform")
+                    Label(channel.followerCount.abbreviated, systemImage: "person.2")
+                    Label(channel.clipCount.abbreviated, systemImage: "waveform")
                 }
-                .font(.caption)
-                .foregroundStyle(.tertiary)
+                .font(.caption).foregroundStyle(.tertiary)
             }
 
             Spacer()
 
             if let role = channel.currentUserRole {
                 Text(role.rawValue.capitalized)
-                    .font(.caption2)
-                    .fontWeight(.semibold)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .font(.caption2).fontWeight(.semibold)
+                    .padding(.horizontal, 8).padding(.vertical, 4)
                     .background(AppTheme.gold.opacity(0.15), in: Capsule())
                     .foregroundStyle(AppTheme.gold)
             }
         }
     }
+}
 
+extension Int {
+    var abbreviated: String {
+        switch self {
+        case 1_000_000...: return String(format: "%.1fM", Double(self) / 1_000_000)
+        case 1_000...:     return String(format: "%.1fK", Double(self) / 1_000)
+        default:           return "\(self)"
+        }
+    }
 }
 
 // MARK: - Empty State
@@ -234,16 +388,6 @@ struct ChannelEmptyState: View {
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 40)
             }
-        }
-    }
-}
-
-extension Int {
-    var abbreviated: String {
-        switch self {
-        case 1_000_000...: return String(format: "%.1fM", Double(self) / 1_000_000)
-        case 1_000...:     return String(format: "%.1fK", Double(self) / 1_000)
-        default:           return "\(self)"
         }
     }
 }

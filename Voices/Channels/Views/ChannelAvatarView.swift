@@ -7,17 +7,11 @@ struct ChannelAvatarView: View {
     var size: CGFloat = 44
     var avatarURL: String? = nil
 
-    private var initials: String {
-        name
-            .split(separator: " ")
-            .prefix(2)
-            .compactMap { $0.first.map { String($0).uppercased() } }
-            .joined()
-    }
+    private var initials: String { Self.initials(for: name) }
 
     var body: some View {
         ZStack {
-            gradient
+            Self.gradient(for: name)
 
             Text(initials.isEmpty ? "?" : initials)
                 .font(.system(size: size * 0.36, weight: .bold, design: .rounded))
@@ -35,7 +29,17 @@ struct ChannelAvatarView: View {
         .clipShape(RoundedRectangle(cornerRadius: size * 0.22))
     }
 
-    private var gradient: LinearGradient {
+    /// Shared with any view that needs the same look without ChannelAvatarView's
+    /// fixed corner radius (e.g. a full-bleed grid tile background).
+    static func initials(for name: String) -> String {
+        name
+            .split(separator: " ")
+            .prefix(2)
+            .compactMap { $0.first.map { String($0).uppercased() } }
+            .joined()
+    }
+
+    static func gradient(for name: String) -> LinearGradient {
         let h = abs(name.hashValue)
         let hue1 = Double(h % 1000) / 1000.0
         let hue2 = Double((h / 1000) % 1000) / 1000.0

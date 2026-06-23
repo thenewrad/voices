@@ -53,7 +53,6 @@
 		BB440044BB440044BB440044 /* ClipRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA440044AA440044AA440044 /* ClipRow.swift */; };
 		BB550055BB550055BB550055 /* MiniPlayerBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA550055AA550055AA550055 /* MiniPlayerBar.swift */; };
 		BB660066BB660066BB660066 /* FeedViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA660066AA660066AA660066 /* FeedViewModel.swift */; };
-		C0DAFBC962C2471BBF8F88BD /* MyChannelsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9A7520FDA24C0D9F31C43B /* MyChannelsView.swift */; };
 		51013E79640A40AF841CDDE0 /* ChannelAvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B562E93D6877418989A78540 /* ChannelAvatarView.swift */; };
 		C5632A09982AF0C5DB51593E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DE823F8C5E0BC9198F6A754C /* Foundation.framework */; };
 		C5CD856C6FD34C6647F6A845 /* VoicesApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 284BFA74983F45ECB60E6482 /* VoicesApp.swift */; };
@@ -93,7 +92,6 @@
 		465AF4BF4EEB40F7B0194512 /* Channel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Channel.swift; sourceTree = "<group>"; };
 		4FC559317353469FA9711496 /* CreateChannelView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CreateChannelView.swift; sourceTree = "<group>"; };
 		58960CD5DA624E5425277C71 /* NowPlayingView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NowPlayingView.swift; sourceTree = "<group>"; };
-		5B9A7520FDA24C0D9F31C43B /* MyChannelsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MyChannelsView.swift; sourceTree = "<group>"; };
 		B562E93D6877418989A78540 /* ChannelAvatarView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChannelAvatarView.swift; sourceTree = "<group>"; };
 		6438C2EE825E4954B2463147 /* ChannelsDiscoveryView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChannelsDiscoveryView.swift; sourceTree = "<group>"; };
 		6B1B31692F1BEA4DAD66BDFB /* UserProfileView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = UserProfileView.swift; path = UserProfile/UserProfileView.swift; sourceTree = "<group>"; };
@@ -222,7 +220,6 @@
 				0D50029081FE449B8EB0A7AC /* ChannelInviteView.swift */,
 				4FC559317353469FA9711496 /* CreateChannelView.swift */,
 				E5DDE33316CF47A08F847510 /* ChannelSettingsView.swift */,
-				5B9A7520FDA24C0D9F31C43B /* MyChannelsView.swift */,
 				B562E93D6877418989A78540 /* ChannelAvatarView.swift */,
 			);
 			path = Views;
@@ -564,7 +561,6 @@
 				E521D65458444A148DF56788 /* ChannelInviteView.swift in Sources */,
 				E4BB5F9C4D1E40158B948098 /* CreateChannelView.swift in Sources */,
 				9FD15BAB7CD74D96B919615E /* ChannelSettingsView.swift in Sources */,
-				C0DAFBC962C2471BBF8F88BD /* MyChannelsView.swift in Sources */,
 				51013E79640A40AF841CDDE0 /* ChannelAvatarView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
