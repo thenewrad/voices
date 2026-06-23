@@ -161,10 +161,9 @@ struct ChannelTileView: View {
     let channel: Channel
 
     var body: some View {
-        GeometryReader { geo in
-            ZStack(alignment: .bottom) {
-
-                // Background: avatar image or gradient + initials placeholder
+        VStack(alignment: .leading, spacing: 6) {
+            GeometryReader { geo in
+                // Avatar image or gradient + initials placeholder
                 Group {
                     if let url = channel.avatarURL, let parsed = URL(string: url) {
                         AsyncImage(url: parsed) { phase in
@@ -181,51 +180,39 @@ struct ChannelTileView: View {
                 }
                 .frame(width: geo.size.width, height: geo.size.width)
                 .clipped()
-
-                // Bottom scrim + info
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(channel.name)
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.white)
-                        .lineLimit(2)
-
-                    HStack(spacing: 6) {
-                        Label(channel.followerCount.abbreviated, systemImage: "person.2.fill")
-                            .font(.caption2)
-                            .foregroundStyle(.white.opacity(0.85))
-
-                        if let role = channel.currentUserRole, role != .follower {
-                            Text(role.rawValue.capitalized)
-                                .font(.caption2)
-                                .fontWeight(.semibold)
-                                .padding(.horizontal, 5)
-                                .padding(.vertical, 2)
-                                .background(.white.opacity(0.25), in: Capsule())
-                                .foregroundStyle(.white)
-                        }
-
-                        if !channel.isPublic {
-                            Image(systemName: "lock.fill")
-                                .font(.caption2)
-                                .foregroundStyle(.white.opacity(0.85))
-                        }
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(10)
-                .background(
-                    LinearGradient(
-                        colors: [.clear, .black.opacity(0.7)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
+                .clipShape(RoundedRectangle(cornerRadius: 14))
             }
-            .frame(width: geo.size.width, height: geo.size.width)
-            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .aspectRatio(1, contentMode: .fit)  // force square
+
+            // Name + metadata, below the tile
+            Text(channel.name)
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(.primary)
+                .lineLimit(2)
+
+            HStack(spacing: 6) {
+                Label(channel.followerCount.abbreviated, systemImage: "person.2.fill")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+
+                if let role = channel.currentUserRole, role != .follower {
+                    Text(role.rawValue.capitalized)
+                        .font(.caption2)
+                        .fontWeight(.semibold)
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 2)
+                        .background(AppTheme.gold.opacity(0.15), in: Capsule())
+                        .foregroundStyle(AppTheme.gold)
+                }
+
+                if !channel.isPublic {
+                    Image(systemName: "lock.fill")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+            }
         }
-        .aspectRatio(1, contentMode: .fit)  // force square
     }
 
     private var gradientPlaceholder: some View {
