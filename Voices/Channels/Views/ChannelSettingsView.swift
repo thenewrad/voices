@@ -12,7 +12,9 @@ struct ChannelSettingsView: View {
     @State private var isMonetized: Bool
     @State private var avatarURL: String?
     @State private var members: [ChannelMember] = []
+    @State private var invites: [ChannelInvite] = []
     @State private var isLoading = false
+    @State private var isLoadingInvites = false
     @State private var isSaving = false
     @State private var isUploadingIcon = false
     @State private var showImagePicker = false
@@ -88,6 +90,19 @@ struct ChannelSettingsView: View {
                     }
                 }
 
+                // Invite status
+                Section("Invites (\(invites.count))") {
+                    if isLoadingInvites {
+                        ProgressView()
+                    } else if invites.isEmpty {
+                        Text("No invites sent yet").foregroundStyle(.secondary)
+                    } else {
+                        ForEach(invites) { invite in
+                            InviteStatusRow(invite: invite)
+                        }
+                    }
+                }
+
                 // Danger zone
                 Section {
                     Button("Archive Channel", role: .destructive) {
@@ -127,7 +142,10 @@ struct ChannelSettingsView: View {
             } message: {
                 Text("This is permanent and cannot be undone.")
             }
-            .task { await loadMembers() }
+            .task {
+                await loadMembers()
+                await loadInvites()
+            }
             .sheet(isPresented: $showImagePicker) {
                 ImagePickerView { image in
                     Task { await uploadIcon(image) }
@@ -141,6 +159,16 @@ struct ChannelSettingsView: View {
         defer { isLoading = false }
         do {
             members = try await ChannelService.shared.fetchMembers(channelId: channel.id)
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
+    private func loadInvites() async {
+        isLoadingInvites = true
+        defer { isLoadingInvites = false }
+        do {
+            invites = try await ChannelService.shared.fetchChannelInvites(channelId: channel.id)
         } catch {
             self.error = error.localizedDescription
         }
@@ -213,6 +241,50 @@ struct ChannelSettingsView: View {
             dismiss()
         } catch {
             self.error = error.localizedDescription
+        }
+    }
+}
+
+// MARK: - InviteStatusRow
+
+struct InviteStatusRow: View {
+    let invite: ChannelInvite
+
+    private var statusColor: Color {
+        switch invite.status {
+        case .pending:  return AppTheme.gold
+        case .accepted: return .green
+        case .declined: return .red
+        }
+    }
+
+    var body: some View {
+        HStack {
+            Circle()
+                .fill(Color(.systemGray4))
+                .frame(width: 36, height: 36)
+                .overlay {
+                    Image(systemName: "person.fill").foregroundStyle(.secondary)
+                }
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(invite.invitee?.username ?? "Unknown")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                Text(invite.createdAt, style: .date)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            Text(invite.status.rawValue.capitalized)
+                .font(.caption2)
+                .fontWeight(.semibold)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(statusColor.opacity(0.15), in: Capsule())
+                .foregroundStyle(statusColor)
         }
     }
 }

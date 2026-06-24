@@ -121,6 +121,7 @@ struct ChannelInvite: Codable, Identifiable {
 
     // Joined
     var channel: Channel?
+    var invitee: ChannelMemberProfile?
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -132,6 +133,7 @@ struct ChannelInvite: Codable, Identifiable {
         case createdAt      = "created_at"
         case expiresAt      = "expires_at"
         case channel        = "channels"
+        case invitee        = "profiles"
     }
 }
 

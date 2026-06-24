@@ -269,6 +269,17 @@ class ChannelService: ObservableObject {
             .value
     }
 
+    /// All invites sent for a channel (any status), for the admin/mod to review.
+    func fetchChannelInvites(channelId: UUID) async throws -> [ChannelInvite] {
+        return try await client
+            .from("channel_invites")
+            .select("*, profiles!channel_invites_invited_user_id_fkey(username, avatar_url)")
+            .eq("channel_id", value: channelId)
+            .order("created_at", ascending: false)
+            .execute()
+            .value
+    }
+
     func respondToInvite(id: UUID, accept: Bool) async throws {
         guard let userId = client.auth.currentUser?.id else { throw ChannelError.notAuthenticated }
 
