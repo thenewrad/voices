@@ -443,27 +443,29 @@ struct LocalView: View {
                 showActivity = true
                 activityVM.markRead()
             }) {
-                ZStack(alignment: .topTrailing) {
-                    ZStack {
-                        Circle()
-                            .fill(Color.white.opacity(0.15))
-                            .frame(width: 36, height: 36)
-                        Image(systemName: "bell")
-                            .foregroundColor(.white)
-                            .font(.system(size: 15))
-                    }
-                    .padding(.top, 6)
-                    .padding(.trailing, 6)
+                ZStack {
+                    Circle()
+                        .fill(Color.white.opacity(0.15))
+                        .frame(width: 36, height: 36)
+                    Image(systemName: "bell")
+                        .foregroundColor(.white)
+                        .font(.system(size: 15))
+                }
+                .overlay(alignment: .topTrailing) {
                     if activityVM.unreadCount > 0 {
                         Text("\(min(activityVM.unreadCount, 99))")
                             .font(.system(size: 9, weight: .bold))
                             .foregroundColor(.white)
-                            .padding(.horizontal, 4)
-                            .padding(.vertical, 2)
+                            .frame(minWidth: 16, minHeight: 16)
+                            .padding(2)
                             .background(Color.red)
-                            .clipShape(Capsule())
+                            .clipShape(Circle())
+                            .offset(x: 6, y: -6)
+                            .padding(.top, 6)
+                            .padding(.trailing, 6)
                     }
                 }
+                .clipped(antialiased: false)
             }
             .buttonStyle(PlainButtonStyle())
             .sheet(isPresented: $showActivity) {
