@@ -72,12 +72,12 @@ struct VoicesApp: App {
                     .shadow(color: .black.opacity(0.18), radius: 16, x: 0, y: 8)
 
                 Text("ZeitVox")
-                    .font(.system(size: 44, weight: .bold, design: .rounded))
+                    .font(.system(size: 50, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
 
                 Text("The Vox life chose me")
-                    .font(.subheadline)
-                    .foregroundStyle(.white.opacity(0.8))
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(.white.opacity(0.85))
 
                 ProgressView()
                     .tint(.white)
