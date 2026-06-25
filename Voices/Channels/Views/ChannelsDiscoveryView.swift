@@ -136,7 +136,8 @@ struct ChannelsDiscoveryView: View {
                     Button {
                         showCreate = true
                     } label: {
-                        Image(systemName: "plus")
+                        Label("Create Channel", systemImage: "plus")
+                            .labelStyle(.titleAndIcon)
                     }
                 }
             }
