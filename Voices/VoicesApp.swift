@@ -63,12 +63,25 @@ struct VoicesApp: App {
                 endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
-            VStack(spacing: 20) {
-                Image(systemName: "waveform.circle.fill")
-                    .font(.system(size: 64))
+            VStack(spacing: 14) {
+                Image("AppLogo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 100, height: 100)
+                    .clipShape(RoundedRectangle(cornerRadius: 22))
+                    .shadow(color: .black.opacity(0.18), radius: 16, x: 0, y: 8)
+
+                Text("ZeitVox")
+                    .font(.system(size: 44, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
+
+                Text("The Vox life chose me")
+                    .font(.subheadline)
+                    .foregroundStyle(.white.opacity(0.8))
+
                 ProgressView()
                     .tint(.white)
+                    .padding(.top, 8)
             }
         }
     }
