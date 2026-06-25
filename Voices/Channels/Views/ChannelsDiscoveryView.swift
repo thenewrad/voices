@@ -20,7 +20,9 @@ enum ChannelFilter: Hashable {
 
 struct ChannelsDiscoveryView: View {
     @StateObject private var vm = ChannelsDiscoveryViewModel()
+    @ObservedObject private var player = AudioPlayerService.shared
     @State private var showCreate = false
+    @State private var isNowPlayingPresented = false
 
     private let columns = [
         GridItem(.flexible(), spacing: 12),
@@ -108,6 +110,12 @@ struct ChannelsDiscoveryView: View {
                     .refreshable { await vm.load() }
                 }
             }
+            .safeAreaInset(edge: .bottom) {
+                if player.currentClip != nil {
+                    MiniPlayerBar(isExpanded: $isNowPlayingPresented)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
             .navigationTitle("Channels")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
@@ -150,6 +158,11 @@ struct ChannelsDiscoveryView: View {
                 Button("OK", role: .cancel) {}
             } message: {
                 Text(vm.errorMessage)
+            }
+            .sheet(isPresented: $isNowPlayingPresented) {
+                NowPlayingView()
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.visible)
             }
         }
     }
