@@ -136,8 +136,10 @@ struct ChannelsDiscoveryView: View {
                     Button {
                         showCreate = true
                     } label: {
-                        Label("Create Channel", systemImage: "plus")
-                            .labelStyle(.titleAndIcon)
+                        HStack(spacing: 4) {
+                            Image(systemName: "plus")
+                            Text("Create Channel")
+                        }
                     }
                 }
             }

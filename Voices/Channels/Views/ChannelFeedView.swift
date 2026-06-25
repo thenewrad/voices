@@ -7,10 +7,12 @@ struct ChannelFeedView: View {
     var isPresentedModally: Bool = false
 
     @StateObject private var vm: ChannelFeedViewModel
+    @ObservedObject private var player = AudioPlayerService.shared
     @Environment(\.dismiss) private var dismiss
     @State private var showSettings = false
     @State private var showInvite = false
     @State private var showRecord = false
+    @State private var isNowPlayingPresented = false
 
     init(channel: Channel, isPresentedModally: Bool = false) {
         self.channel = channel
@@ -101,6 +103,17 @@ struct ChannelFeedView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text(vm.errorMessage)
+        }
+        .safeAreaInset(edge: .bottom) {
+            if player.currentClip != nil {
+                MiniPlayerBar(isExpanded: $isNowPlayingPresented)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .sheet(isPresented: $isNowPlayingPresented) {
+            NowPlayingView()
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
         }
     }
 
