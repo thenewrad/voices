@@ -24,6 +24,8 @@ struct FollowingFeedView: View {
                         emptyState
                     } else if vm.isLoading && vm.clips.isEmpty {
                         ProgressView()
+                    } else if vm.error != nil && vm.clips.isEmpty {
+                        errorState
                     } else {
                         clipList
                     }
@@ -190,6 +192,35 @@ struct FollowingFeedView: View {
                 }
                 Task { await vm.fetchClips() }
             }
+        }
+    }
+
+    // MARK: - Error state
+
+    private var errorState: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "wifi.exclamationmark")
+                .font(.system(size: 48))
+                .foregroundStyle(.tertiary)
+            Text("Posts failed to load")
+                .font(.title3.bold())
+                .foregroundStyle(.white)
+            Text("Check your connection and try again.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+            Button {
+                Task { await vm.fetchClips() }
+            } label: {
+                Text("Try Again")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(.black)
+                    .frame(width: 140, height: 44)
+                    .background(AppTheme.gold)
+                    .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
         }
     }
 

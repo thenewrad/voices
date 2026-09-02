@@ -9,6 +9,8 @@ extension Notification.Name {
 
 struct ContentView: View {
     @State private var selectedTab = 0
+    @State private var hasDraft = false
+    @State private var showDraftResume = false
 
     init() {
         let bg = UIColor(AppTheme.canvasBlack)
@@ -71,6 +73,67 @@ struct ContentView: View {
         }
         .tint(AppTheme.gold)
         .preferredColorScheme(.dark)
+        .overlay(alignment: .bottom) {
+            if hasDraft {
+                draftBanner
+                    .padding(.bottom, 56) // sit just above the tab bar
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: hasDraft)
+        .onAppear {
+            hasDraft = ClipDraftStore.shared.hasDraft
+        }
+        .sheet(isPresented: $showDraftResume, onDismiss: {
+            hasDraft = ClipDraftStore.shared.hasDraft
+        }) {
+            if #available(iOS 17.0, *), let draft = ClipDraftStore.shared.load() {
+                RecordView(draft: draft)
+            }
+        }
+    }
+
+    private var draftBanner: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "mic.badge.plus")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(AppTheme.gold)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Unsaved recording")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(.white)
+                Text("Your last post didn't go through.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            Spacer()
+
+            Button("Resume") {
+                showDraftResume = true
+            }
+            .font(.subheadline.bold())
+            .foregroundStyle(AppTheme.gold)
+
+            Button {
+                ClipDraftStore.shared.clear()
+                hasDraft = false
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(AppTheme.cardDark)
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(AppTheme.gold.opacity(0.25), lineWidth: 1)
+        )
+        .padding(.horizontal, 12)
     }
 }
 

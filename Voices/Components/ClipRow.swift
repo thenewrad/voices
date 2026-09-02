@@ -18,6 +18,7 @@ struct ClipRow: View {
     @State private var locationRemoved = false
     @State private var showDMSheet = false
     @State private var showMapLocation = false
+    @State private var showShareSheet = false
 
     private var hasLocation: Bool { !locationRemoved && clip.lat != nil }
 
@@ -65,6 +66,7 @@ struct ClipRow: View {
                 if hasLocation {
                     Button("Show Map Location") { showMapLocation = true }
                 }
+                Button("Share Post") { showShareSheet = true }
                 Button("Send Message") { showDMSheet = true }
                 Button("Hide @\(clip.username)") {
                     Task { try? await relationships.hideUser(userId: userId, username: clip.username) }
@@ -111,6 +113,7 @@ struct ClipRow: View {
             if onDelete != nil {
                 Button("Delete Post", role: .destructive) { onDelete?() }
             }
+            Button("Share Post") { showShareSheet = true }
             if hasLocation {
                 Button("Show Map Location") { showMapLocation = true }
                 Button("Remove Geolocation") {
@@ -118,6 +121,11 @@ struct ClipRow: View {
                 }
             }
             Button("Cancel", role: .cancel) {}
+        }
+        .sheet(isPresented: $showShareSheet) {
+            SharePostSheet(clip: clip)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
         }
     }
 

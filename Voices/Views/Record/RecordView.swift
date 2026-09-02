@@ -13,6 +13,11 @@ struct RecordView: View {
         self.channelName = channelName
     }
 
+    init(draft: ClipDraft) {
+        _vm = StateObject(wrappedValue: RecordingViewModel(draft: draft))
+        self.channelName = nil
+    }
+
     private var isActive: Bool { vm.isRecording || vm.isPaused }
     private var isPreview: Bool { vm.isPreviewingRecording }
 
@@ -67,6 +72,9 @@ struct RecordView: View {
             }
             .onChange(of: isActive) { active in
                 UIApplication.shared.isIdleTimerDisabled = active
+            }
+            .onAppear {
+                vm.activateDraftPreview()
             }
             .onDisappear {
                 UIApplication.shared.isIdleTimerDisabled = false
@@ -195,9 +203,10 @@ struct RecordView: View {
 
     @ViewBuilder
     private var previewContent: some View {
-        Text("Review your clip")
+        Text(vm.uploadFailed ? "Upload failed" : "Review your clip")
             .font(.title3.bold())
-            .foregroundStyle(.white)
+            .foregroundStyle(vm.uploadFailed ? .red : .white)
+            .animation(.easeInOut(duration: 0.2), value: vm.uploadFailed)
 
         GeometryReader { geo in
             ZStack(alignment: .leading) {
@@ -229,7 +238,7 @@ struct RecordView: View {
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(.secondary)
 
-            Button("Post") { vm.confirmPost() }
+            Button(vm.uploadFailed ? "Retry" : "Post") { vm.confirmPost() }
                 .font(.subheadline.weight(.bold))
                 .foregroundStyle(AppTheme.gold)
                 .disabled(vm.isUploading)
@@ -249,10 +258,11 @@ struct RecordView: View {
                     .foregroundStyle(vm.uploadFailed ? .red : AppTheme.gold)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
-        .frame(height: 32)
         .animation(.easeInOut, value: vm.statusMessage)
+        .padding(.bottom, 4)
     }
 
     // MARK: - Header

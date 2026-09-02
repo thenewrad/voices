@@ -6,6 +6,7 @@ final class FollowingFeedViewModel: ObservableObject {
     @Published var clips: [Clip] = []
     @Published var isLoading = false
     @Published var isNotFollowingAnyone = false
+    @Published var error: String?
     @Published var freshClipIDs: Set<UUID> = []
 
     private var channel: RealtimeChannelV2?
@@ -15,6 +16,7 @@ final class FollowingFeedViewModel: ObservableObject {
 
     func fetchClips() async {
         isLoading = true
+        error = nil
         defer { isLoading = false }
         do {
             let ids = try await FollowService.shared.followingIds()
@@ -53,7 +55,7 @@ final class FollowingFeedViewModel: ObservableObject {
                 }
             }
         } catch {
-            print("FollowingFeedViewModel.fetchClips error: \(error)")
+            self.error = error.localizedDescription
         }
     }
 

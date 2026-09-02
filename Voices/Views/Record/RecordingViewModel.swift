@@ -51,6 +51,11 @@ final class RecordingViewModel: NSObject, ObservableObject {
     /// When set, the posted clip is also attached to this channel.
     private let channelId: UUID?
 
+    /// Cached city name from a previous geocode saved in the draft — avoids re-geocoding on retry.
+    private var draftLocationDisplay: String?
+    /// Set in init(draft:); cleared after first call to activateDraftPreview().
+    private var pendingDraft: ClipDraft?
+
     // MARK: - Init
 
     init(channelId: UUID? = nil) {
@@ -59,6 +64,34 @@ final class RecordingViewModel: NSObject, ObservableObject {
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
         locationManager.requestWhenInUseAuthorization()
+    }
+
+    init(draft: ClipDraft) {
+        self.channelId = draft.channelId
+        super.init()
+        locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+        lastLocation = draft.location
+        includeLocation = draft.includeLocation
+        draftLocationDisplay = draft.locationDisplay
+        timeRemaining = max(0, Self.maxDuration - Double(draft.durationSeconds))
+        // Copy draft audio to temp so the existing upload path works unchanged.
+        let tempURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent(UUID().uuidString)
+            .appendingPathExtension("m4a")
+        if (try? FileManager.default.copyItem(at: draft.audioURL, to: tempURL)) != nil {
+            recordingURL = tempURL
+        }
+        pendingDraft = draft
+    }
+
+    /// Called from RecordView.onAppear when created via init(draft:).
+    func activateDraftPreview() {
+        guard pendingDraft != nil else { return }
+        pendingDraft = nil
+        guard recordingURL != nil else { return }
+        setupPreviewPlayer()
+        isPreviewingRecording = true
     }
 
     // MARK: - Public
@@ -106,6 +139,7 @@ final class RecordingViewModel: NSObject, ObservableObject {
     func discardAndReRecord() {
         stopPreviewPlayer()
         if let url = recordingURL { try? FileManager.default.removeItem(at: url) }
+        ClipDraftStore.shared.clear()
         resetToIdle()
     }
 
@@ -124,6 +158,7 @@ final class RecordingViewModel: NSObject, ObservableObject {
         if let url = recordingURL {
             try? FileManager.default.removeItem(at: url)
         }
+        ClipDraftStore.shared.clear()
         restorePlaybackSession()
         resetToIdle()
     }
@@ -247,16 +282,20 @@ final class RecordingViewModel: NSObject, ObservableObject {
 
     // MARK: - Preview playback
 
-    private func setupPreviewPlayer() {
+    private func setupPreviewPlayer(autoPlay: Bool = true) {
         guard let url = recordingURL else { return }
         do {
             try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
             previewPlayer = try AVAudioPlayer(contentsOf: url)
             previewPlayer?.prepareToPlay()
             previewProgress = 0
-            previewPlayer?.play()
-            isPlayingPreview = true
-            startPreviewTimer()
+            if autoPlay {
+                previewPlayer?.play()
+                isPlayingPreview = true
+                startPreviewTimer()
+            } else {
+                isPlayingPreview = false
+            }
         } catch {
             statusMessage = "Could not load preview: \(error.localizedDescription)"
         }
@@ -359,76 +398,105 @@ final class RecordingViewModel: NSObject, ObservableObject {
 
         Task {
             do {
-                let data = try Data(contentsOf: url)
-                let fileName = "\(UUID().uuidString).m4a"
-                let path = fileName
-
-                let session = try await SupabaseService.shared.client.auth.session
-                let userId = session.user.id
-
-                let lat = includeLocation ? lastLocation?.coordinate.latitude : nil
-                let lng = includeLocation ? lastLocation?.coordinate.longitude : nil
-                let maxDuration = Self.maxDuration
-
-                // Reverse geocode to city name — stored for display; exact coords never shown in UI
-                var locationDisplay: String? = nil
-                if let lat, let lng {
-                    locationDisplay = await reverseGeocode(lat: lat, lng: lng)
+                try await attemptUpload(url: url)
+            } catch {
+                // First attempt failed. Most common cause on the first post of the day:
+                // auth JWT refresh or network cold start. Wait 3s and retry once silently.
+                print("[Voices] upload attempt 1 failed: \(error.localizedDescription)")
+                statusMessage = "Retrying…"
+                try? await Task.sleep(nanoseconds: 3_000_000_000)
+                do {
+                    try await attemptUpload(url: url)
+                } catch {
+                    print("[Voices] upload attempt 2 failed: \(error.localizedDescription)")
+                    isUploading = false
+                    uploadFailed = true
+                    statusMessage = "Upload failed. Your recording is saved — listen back, then tap Retry."
+                    setupPreviewPlayer(autoPlay: false)
                 }
+            }
+        }
+    }
 
-                let clipId = UUID()
+    private func attemptUpload(url: URL) async throws {
+        let data = try Data(contentsOf: url)
+        let fileName = "\(UUID().uuidString).m4a"
+        let path = fileName
 
-                // Upload + DB insert both covered by 30-second timeout
-                try await withThrowingTaskGroup(of: Void.self) { group in
-                    group.addTask {
-                        _ = try await SupabaseService.shared.client.storage
-                            .from("audio")
-                            .upload(path, data: data, options: FileOptions(contentType: "audio/mp4"))
+        let session = try await SupabaseService.shared.client.auth.session
+        let userId = session.user.id
 
-                        let remaining = await self.timeRemaining
-                        let row = ClipInsert(id: clipId, user_id: userId, audio_url: path, lat: lat, lng: lng, duration_seconds: Int(maxDuration - remaining), location_display: locationDisplay, channel_id: self.channelId)
-                        try await SupabaseService.shared.client
-                            .from("clips")
-                            .insert(row)
-                            .execute()
+        let lat = includeLocation ? lastLocation?.coordinate.latitude : nil
+        let lng = includeLocation ? lastLocation?.coordinate.longitude : nil
+        let maxDuration = Self.maxDuration
 
-                        if let channelId = self.channelId {
-                            try await ChannelService.shared.postClipToChannel(channelId: channelId, clipId: clipId)
-                        }
-                    }
-                    group.addTask {
-                        try await Task.sleep(nanoseconds: 60_000_000_000)
-                        throw URLError(.timedOut)
-                    }
-                    try await group.next()
-                    group.cancelAll()
-                }
+        // Reverse geocode to city name — stored for display; exact coords never shown in UI.
+        // Skip if already cached from a previous attempt or from the draft.
+        var locationDisplay: String? = nil
+        if let lat, let lng {
+            if let cached = draftLocationDisplay {
+                locationDisplay = cached
+            } else {
+                locationDisplay = await reverseGeocode(lat: lat, lng: lng)
+            }
+        }
 
-                // Increment clip_count — non-fatal if the RPC fails
-                struct IncrementParams: Encodable { let user_id: UUID }
-                _ = try? await SupabaseService.shared.client
-                    .rpc("increment_clip_count", params: IncrementParams(user_id: userId))
+        let clipId = UUID()
+
+        // Persist draft before hitting the network so a crash/failure never loses the recording.
+        let resolvedLocationDisplay = draftLocationDisplay ?? locationDisplay
+        try? ClipDraftStore.shared.save(
+            audioURL: url,
+            lat: lat, lng: lng,
+            durationSeconds: Int(maxDuration - timeRemaining),
+            includeLocation: includeLocation,
+            channelId: channelId,
+            locationDisplay: resolvedLocationDisplay
+        )
+        draftLocationDisplay = resolvedLocationDisplay
+
+        // Upload + DB insert both covered by 60-second timeout
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            group.addTask {
+                _ = try await SupabaseService.shared.client.storage
+                    .from("audio")
+                    .upload(path, data: data, options: FileOptions(contentType: "audio/mp4"))
+
+                let remaining = await self.timeRemaining
+                let row = ClipInsert(id: clipId, user_id: userId, audio_url: path, lat: lat, lng: lng, duration_seconds: Int(maxDuration - remaining), location_display: locationDisplay, channel_id: self.channelId)
+                try await SupabaseService.shared.client
+                    .from("clips")
+                    .insert(row)
                     .execute()
 
-                isUploading = false
-                uploadFailed = false
-                statusMessage = "Posted!"
-                try? FileManager.default.removeItem(at: url)
-                NotificationCenter.default.post(name: .clipPosted, object: nil)
-                restorePlaybackSession()
-                // Auto-reset to idle after 2 seconds
-                Task {
-                    try? await Task.sleep(nanoseconds: 2_000_000_000)
-                    self.resetToIdle()
+                if let channelId = self.channelId {
+                    try await ChannelService.shared.postClipToChannel(channelId: channelId, clipId: clipId)
                 }
-
-            } catch {
-                isUploading = false
-                uploadFailed = true
-                statusMessage = "Upload failed: \(error.localizedDescription)"
-                try? FileManager.default.removeItem(at: url)
-                restorePlaybackSession()
             }
+            group.addTask {
+                try await Task.sleep(nanoseconds: 60_000_000_000)
+                throw URLError(.timedOut)
+            }
+            try await group.next()
+            group.cancelAll()
+        }
+
+        // Increment clip_count — non-fatal if the RPC fails
+        struct IncrementParams: Encodable { let user_id: UUID }
+        _ = try? await SupabaseService.shared.client
+            .rpc("increment_clip_count", params: IncrementParams(user_id: userId))
+            .execute()
+
+        isUploading = false
+        uploadFailed = false
+        statusMessage = "Posted!"
+        ClipDraftStore.shared.clear()
+        try? FileManager.default.removeItem(at: url)
+        NotificationCenter.default.post(name: .clipPosted, object: nil)
+        restorePlaybackSession()
+        Task {
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            self.resetToIdle()
         }
     }
 

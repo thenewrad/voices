@@ -41,6 +41,7 @@ struct ActivityItem: Identifiable {
     let replyLikeCount: Int?
     let replyClipId: UUID?
     let dmMessageId: UUID?
+    let sharedClipId: UUID?
 
     var contentLabel: String? {
         if let t = clipTitle, !t.isEmpty { return t }
@@ -131,6 +132,7 @@ final class ActivityViewModel: ObservableObject {
             print("ActivityViewModel: no clips, skipping likes/replies fetch")
         } else {
             struct LikeRow: Decodable {
+                let clip_id: UUID
                 let created_at: Date
                 let profiles: ActivityProfile?
                 struct ClipInfo: Decodable {
@@ -143,7 +145,7 @@ final class ActivityViewModel: ObservableObject {
             do {
                 let response = try await SupabaseService.shared.client
                     .from("likes")
-                    .select("created_at, profiles!likes_user_id_fkey(username), clips!likes_clip_id_fkey(title, user_id)")
+                    .select("clip_id, created_at, profiles!likes_user_id_fkey(username), clips!likes_clip_id_fkey(title, user_id)")
                     .in("clip_id", values: clipIDs)
                     .execute()
                 let decoder = JSONDecoder()
@@ -168,8 +170,9 @@ final class ActivityViewModel: ObservableObject {
                         clip: nil,
                         replyAudioUrl: nil,
                         replyLikeCount: nil,
-                        replyClipId: nil,
-                        dmMessageId: nil
+                        replyClipId: like.clip_id,
+                        dmMessageId: nil,
+                        sharedClipId: nil
                     ))
                 }
             } catch let e as DecodingError {
@@ -224,7 +227,8 @@ final class ActivityViewModel: ObservableObject {
                         replyAudioUrl: reply.audio_url,
                         replyLikeCount: reply.like_count,
                         replyClipId: reply.clip_id,
-                        dmMessageId: nil
+                        dmMessageId: nil,
+                        sharedClipId: nil
                     ))
                 }
             } catch let e as DecodingError {
@@ -270,7 +274,8 @@ final class ActivityViewModel: ObservableObject {
                     replyAudioUrl: nil,
                     replyLikeCount: nil,
                     replyClipId: nil,
-                    dmMessageId: nil
+                    dmMessageId: nil,
+                    sharedClipId: nil
                 ))
             }
         } catch let e as DecodingError {
@@ -321,7 +326,8 @@ final class ActivityViewModel: ObservableObject {
                     replyAudioUrl: row.audio_url,
                     replyLikeCount: row.like_count,
                     replyClipId: row.clip_id,
-                    dmMessageId: nil
+                    dmMessageId: nil,
+                    sharedClipId: nil
                 ))
             }
         } catch let e as DecodingError {
@@ -336,6 +342,7 @@ final class ActivityViewModel: ObservableObject {
             let audio_url: String
             let created_at: Date
             let sender_id: UUID
+            let clip_id: UUID?
         }
         do {
             let formatter = DateFormatter()
@@ -348,7 +355,7 @@ final class ActivityViewModel: ObservableObject {
 
             let response = try await SupabaseService.shared.client
                 .from("direct_messages")
-                .select("id, audio_url, created_at, sender_id")
+                .select("id, audio_url, created_at, sender_id, clip_id")
                 .eq("recipient_id", value: userId.uuidString)
                 .order("created_at", ascending: false)
                 .execute()
@@ -380,7 +387,8 @@ final class ActivityViewModel: ObservableObject {
                     replyAudioUrl: dm.audio_url,
                     replyLikeCount: nil,
                     replyClipId: nil,
-                    dmMessageId: dm.id
+                    dmMessageId: dm.id,
+                    sharedClipId: dm.clip_id
                 ))
             }
             } // end if !dmRows.isEmpty

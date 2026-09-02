@@ -14,6 +14,7 @@ final class FeedViewModel: ObservableObject {
 
     func fetchClips() async {
         isLoading = true
+        error = nil
         defer { isLoading = false }
         do {
             let fetched: [Clip] = try await SupabaseService.shared.client

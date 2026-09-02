@@ -24,6 +24,8 @@ struct FeedView: View {
 
                     if feedVM.isLoading && feedVM.clips.isEmpty {
                         ProgressView()
+                    } else if feedVM.error != nil && feedVM.clips.isEmpty {
+                        errorState
                     } else if !feedVM.isLoading && feedVM.clips.isEmpty {
                         emptyState
                     }
@@ -158,6 +160,35 @@ struct FeedView: View {
         .background(AppTheme.canvasBlack)
         .overlay(alignment: .bottom) {
             Divider().overlay(Color(hex: "3A2820"))
+        }
+    }
+
+    // MARK: - Error state
+
+    private var errorState: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "wifi.exclamationmark")
+                .font(.system(size: 48))
+                .foregroundStyle(.tertiary)
+            Text("Posts failed to load")
+                .font(.title3.bold())
+                .foregroundStyle(.white)
+            Text("Check your connection and try again.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+            Button {
+                Task { await feedVM.fetchClips() }
+            } label: {
+                Text("Try Again")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(.black)
+                    .frame(width: 140, height: 44)
+                    .background(AppTheme.gold)
+                    .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
         }
     }
 

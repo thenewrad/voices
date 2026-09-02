@@ -71,10 +71,12 @@
 		E521D65458444A148DF56788 /* ChannelInviteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D50029081FE449B8EB0A7AC /* ChannelInviteView.swift */; };
 		E83459536B826B21C412279E /* FollowsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E0D03AEA43D194BC4348BC3 /* FollowsViewModel.swift */; };
 		EE110011EE110011EE110011 /* ReplyPlayerService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE110022EE110022EE110022 /* ReplyPlayerService.swift */; };
+		F2254F816AEF4A5B8D0D2C6E /* ClipDraftStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EE33825F394D4DAA6DD946 /* ClipDraftStore.swift */; };
 		EE330033EE330033EE330033 /* PersistedUUIDSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF330033FF330033FF330033 /* PersistedUUIDSet.swift */; };
 		EE660066EE660066EE660066 /* ReplyMiniPlayerBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF660066FF660066FF660066 /* ReplyMiniPlayerBar.swift */; };
 		FB4033DD29A688F92898CCB0 /* SearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7B73D757C3DFDEF28124CC5 /* SearchViewModel.swift */; };
 		FF990099FF990099FF990099 /* DirectMessageRecordingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE990099EE990099EE990099 /* DirectMessageRecordingView.swift */; };
+		808833A415FD482680E12CDA /* SharePostSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F0961391B7E4A0B8A6D4B2D /* SharePostSheet.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -144,6 +146,8 @@
 		F0F3E15BE8188A5FC433CD58 /* Voices.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Voices.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F9AE32DC90EA6D56DE1D528A /* Config.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Config.plist; sourceTree = "<group>"; };
 		FAFBE40C07BBE6481363CF49 /* FollowUser.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FollowUser.swift; sourceTree = "<group>"; };
+		75EE33825F394D4DAA6DD946 /* ClipDraftStore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ClipDraftStore.swift; sourceTree = "<group>"; };
+		3F0961391B7E4A0B8A6D4B2D /* SharePostSheet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SharePostSheet.swift; path = Activity/SharePostSheet.swift; sourceTree = "<group>"; };
 		FF330033FF330033FF330033 /* PersistedUUIDSet.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PersistedUUIDSet.swift; sourceTree = "<group>"; };
 		FF660066FF660066FF660066 /* ReplyMiniPlayerBar.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ReplyMiniPlayerBar.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -307,6 +311,7 @@
 			children = (
 				D3C9DAD9764AF0A867BD98A1 /* ActivityViewModel.swift */,
 				B6DBCC2E91C8526CCE837F35 /* ActivityView.swift */,
+				3F0961391B7E4A0B8A6D4B2D /* SharePostSheet.swift */,
 			);
 			name = Activity;
 			sourceTree = "<group>";
@@ -394,6 +399,7 @@
 				BB880088BB880088BB880088 /* UserRelationshipService.swift */,
 				CC220022CC220022CC220022 /* AudioCoordinator.swift */,
 				EE110022EE110022EE110022 /* ReplyPlayerService.swift */,
+				75EE33825F394D4DAA6DD946 /* ClipDraftStore.swift */,
 				FF330033FF330033FF330033 /* PersistedUUIDSet.swift */,
 			);
 			path = Services;
@@ -546,7 +552,9 @@
 				FB4033DD29A688F92898CCB0 /* SearchViewModel.swift in Sources */,
 				DD110011DD110011DD110011 /* Reply.swift in Sources */,
 				DD220022DD220022DD220022 /* AudioCoordinator.swift in Sources */,
+				F2254F816AEF4A5B8D0D2C6E /* ClipDraftStore.swift in Sources */,
 				EE330033EE330033EE330033 /* PersistedUUIDSet.swift in Sources */,
+				808833A415FD482680E12CDA /* SharePostSheet.swift in Sources */,
 				EE110011EE110011EE110011 /* ReplyPlayerService.swift in Sources */,
 				DD330033DD330033DD330033 /* ReplyRow.swift in Sources */,
 				DD440044DD440044DD440044 /* ThreadViewModel.swift in Sources */,

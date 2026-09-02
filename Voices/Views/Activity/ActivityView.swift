@@ -128,7 +128,7 @@ struct ActivityView: View {
     }
 
     private var audioItems: [ActivityItem] {
-        filteredItems.filter { $0.replyAudioUrl != nil }
+        filteredItems.filter { $0.replyAudioUrl != nil && $0.sharedClipId == nil }
     }
 
     var body: some View {
@@ -215,9 +215,8 @@ struct ActivityView: View {
     private func handleTap(_ item: ActivityItem) {
         switch item.type {
         case .like:
-            guard let clip = item.clip else { return }
-            AudioPlayerService.shared.play(clip: clip, in: [clip])
-            showNowPlaying = true
+            guard let clipId = item.replyClipId else { return }
+            Task { await playLikedClip(clipId: clipId) }
         case .reply, .replyToReply:
             guard item.replyAudioUrl != nil else { return }
             vm.markReplyPlayed(item.id)
@@ -225,15 +224,33 @@ struct ActivityView: View {
             playerStartIndex = audioItems.firstIndex(where: { $0.id == item.id }) ?? 0
             showQueuePlayer = true
         case .directMessage:
-            guard item.replyAudioUrl != nil else { return }
-            vm.markDMPlayed(item.id)
-            playerQueue = audioItems
-            playerStartIndex = audioItems.firstIndex(where: { $0.id == item.id }) ?? 0
-            showQueuePlayer = true
+            if let sharedClipId = item.sharedClipId {
+                vm.markDMPlayed(item.id)
+                Task { await playLikedClip(clipId: sharedClipId) }
+            } else {
+                guard item.replyAudioUrl != nil else { return }
+                vm.markDMPlayed(item.id)
+                playerQueue = audioItems
+                playerStartIndex = audioItems.firstIndex(where: { $0.id == item.id }) ?? 0
+                showQueuePlayer = true
+            }
         case .follow:
             guard let uid = item.actorUserId else { return }
             followTarget = FollowProfileTarget(id: uid, username: item.actorUsername)
         }
+    }
+
+    private func playLikedClip(clipId: UUID) async {
+        let clips: [Clip] = (try? await SupabaseService.shared.client
+            .from("clips")
+            .select("id, user_id, audio_url, lat, lng, created_at, play_count, reply_count, duration_seconds, title, like_count, location_display, transcript, profiles!clips_user_id_fkey(username, avatar_url, beep_tone)")
+            .eq("id", value: clipId.uuidString)
+            .limit(1)
+            .execute()
+            .value) ?? []
+        guard let clip = clips.first else { return }
+        AudioPlayerService.shared.play(clip: clip, in: [clip])
+        showNowPlaying = true
     }
 
     private func openThread(for item: ActivityItem) async {
@@ -361,7 +378,7 @@ struct ActivityRow: View {
         case .reply:          return "bubble.left.fill"
         case .replyToReply:   return "arrowshape.turn.up.left.fill"
         case .follow:         return "person.fill"
-        case .directMessage:  return "waveform.badge.mic"
+        case .directMessage:  return item.sharedClipId != nil ? "arrowshape.turn.up.forward.fill" : "waveform.badge.mic"
         }
     }
 
@@ -390,6 +407,9 @@ struct ActivityRow: View {
         case .follow:
             return Text("@\(item.actorUsername)").bold() + Text(" followed you.")
         case .directMessage:
+            if item.sharedClipId != nil {
+                return Text("@\(item.actorUsername)").bold() + Text(" shared a post with you.")
+            }
             return Text("@\(item.actorUsername)").bold() + Text(" sent you a voice message.")
         }
     }
